@@ -1,15 +1,13 @@
-import tkinter as tk
-from tkinter import ttk
-from tkinter import filedialog, messagebox, simpledialog
-from tooltip import ToolTip
-from image import check_flag_size
-import menu
 import os
 import json
-from packager import pkg_parts
-from packager import pkg_flags
-from packager import update_mod_version as update_mod
 import webbrowser
+import tkinter as tk
+import menu
+
+from tkinter import ttk, filedialog, messagebox, simpledialog
+from tooltip import ToolTip
+from image import check_flag_size
+from packager import pkg_parts, pkg_flags, update_mod_version as update_mod
 
 class KCreator(tk.Tk):
     def __init__(self, parts_data, mod_name, workspace_dir, mod_ver):

@@ -1,5 +1,5 @@
-from PIL import Image
 import imageio.v3 as iio
+from PIL import Image
 
 def check_flag_size(image_path, expected_width=256, expected_height=160):
     '''Check if the image has the expected dimensions.'''

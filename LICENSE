@@ -1,16 +1,39 @@
-Copyright © 2026 OllyM06
+Copyright (c) 2026 OllyM06
 
-Kreator is free to use, view, and modify for personal or educational purposes.
+KCreator License
 
+Permission is hereby granted to any person obtaining a copy of this software (KCreator) and associated files to use the software for personal, educational, and commercial purposes, subject to the conditions below.
+
+1. Usage Rights
 You may:
-- View and study the source code.
-- Modify it for personal or educational use.
+- Use KCreator to create projects, including mods for Kerbal Space Program (KSP)
+- Distribute and monetize works (such as mods) created using KCreator
+- Modify the software for personal or educational use only
 
-You may not:
-- Redistribute, publish, or release this software or any modified version.
-- Use the name “KCreator” or any branding for derivative works.
-- Use this software for commercial purposes without written permission.
+2. Restrictions
+You may NOT:
+- Redistribute, publish, or share KCreator itself or any modified version of it
+- Claim ownership of KCreator or its source code
+- Use the name "KCreator" or branding in derivative versions of the software
+- Sell or commercially distribute KCreator itself
 
-This software is provided “as is,” without warranty of any kind.
+3. Attribution Requirement
+Any mod, project, or work created using KCreator that is shared publicly or commercially must include at least one of the following credits:
 
-For questions or permission requests, contact: OllyM06
+"Created with KCreator (Copyright OllyM06)"
+
+or
+
+"Built using KCreator"
+
+This credit must appear in the mod description, documentation, or credits section.
+
+4. No Warranty
+This software is provided "as is", without warranty of any kind, express or implied. The author is not responsible for any issues arising from its use.
+
+5. Ownership
+KCreator remains the intellectual property of OllyM06. This license does not transfer ownership of the software.
+
+6. Contact
+For permissions, questions, or licensing requests:
+OllyM06

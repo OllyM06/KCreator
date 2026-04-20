@@ -1,10 +1,12 @@
-import tkinter as tk
-from tkinter import filedialog, messagebox, simpledialog
-from PIL import Image, ImageTk   # Pillow for image resizing
-from pathlib import Path
-import main
 import os
 import json
+from pathlib import Path
+
+import tkinter as tk
+from tkinter import filedialog, messagebox, simpledialog
+from PIL import Image, ImageTk  # Pillow for image resizing
+
+import main
 
 
 class KCreatorMenu(tk.Tk):
