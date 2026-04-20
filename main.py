@@ -5,7 +5,7 @@ import tkinter as tk
 import menu
 
 from tkinter import ttk, filedialog, messagebox, simpledialog
-from tooltip import ToolTip
+from modules.tooltip import ToolTip
 from image import check_flag_size
 from packager import pkg_parts, pkg_flags, update_mod_version as update_mod
 
