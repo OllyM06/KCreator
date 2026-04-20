@@ -5,9 +5,9 @@ import tkinter as tk
 import menu
 
 from tkinter import ttk, filedialog, messagebox, simpledialog
-from modules.tooltip import ToolTip
-from image import check_flag_size
-from packager import pkg_parts, pkg_flags, update_mod_version as update_mod
+from modules.UITools import ToolTip
+from modules.imageTools import check_flag_size
+from modules.packager import pkg_parts, pkg_flags, update_mod_version as update_mod
 
 class KCreator(tk.Tk):
     def __init__(self, parts_data, mod_name, workspace_dir, mod_ver):

@@ -1,7 +1,7 @@
 import json
 import os
 import shutil
-import image as img
+import modules.imageTools as img
 
 # Map part types to KSP categories
 CATEGORY_MAP = {
