@@ -1,0 +1,27 @@
+/* Tablets */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2rem;
+    }
+
+    .container {
+        max-width: 90%;
+        padding: 15px;
+    }
+}
+
+/* Phones */
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.6rem;
+    }
+
+    p {
+        font-size: 0.95rem;
+    }
+
+    .button {
+        width: 100%;
+        padding: 14px;
+    }
+}
