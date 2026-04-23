@@ -1,4 +1,4 @@
-# 🚀 KCreator
+# KCreator
 
 KCreator is a development tool designed to help you create mods for **Kerbal Space Program (KSP)**.
 
@@ -7,28 +7,28 @@ It turns the messy parts of mod development into a clean, structured workflow so
 Think of it as your **modding workspace assistant**.
 
 
-## ✨ What KCreator does
+## What KCreator does
 
 KCreator helps you:
-- 🧱 Create and organize KSP mod projects
-- 🗂️ Manage mod structure and components
-- ⚡ Speed up repetitive setup tasks
-- 🛠️ Keep your project clean and organised
-- 🚀 Make mod development feel less overwhelming
+- Create and organize KSP mod projects
+- Manage mod structure and components
+- Speed up repetitive setup tasks
+- Keep your project clean and organised
+- Make mod development feel less overwhelming
 
 
-## 🎯 Who this is for
+## Who this is for
 
 KCreator is made for:
-- 👶 Beginners learning KSP mod development
-- 🧑‍💻 Developers who want a faster workflow
-- 🎮 Players who want to start making mods without heavy setup
-- 🚀 Anyone who wants to bring ideas into KSP
+- Beginners learning KSP mod development
+- Developers who want a faster workflow
+- Players who want to start making mods without heavy setup
+- Anyone who wants to bring ideas into KSP
 
 You don’t need to be a pro programmer — just some basic file handling helps.
 
 
-## 📦 Installation
+## Installation
 
 You can install KCreator in three ways depending on how you like to work:
 
@@ -49,7 +49,7 @@ python main.py
 
 Perfect for quick setup and getting started fast:
 
-👉 https://ollym06.github.io/KCreator
+https://ollym06.github.io/KCreator
 
 This version is hosted on GitHub Pages and provides a ready-to-use build with minimal setup required.
 
@@ -58,19 +58,19 @@ This version is hosted on GitHub Pages and provides a ready-to-use build with mi
 
 Best for reliability and tested versions:
 
-👉 https://github.com/OllyM06/KCreator/releases
+https://github.com/OllyM06/KCreator/releases
 
 Use this if you want something stable and versioned instead of development builds.
 
 
-## 🎮 Using KCreator outputs (IMPORTANT)
+## Using KCreator outputs (IMPORTANT)
 
-Yes — you can use mods made with KCreator **commercially** 🎉  
+Yes — you can use mods made with KCreator **commercially** 
 That includes publishing, sharing, and monetizing your mods.
 
 BUT there’s one requirement:
 
-### 📌 Attribution required
+### Attribution required
 
 Every mod made using KCreator must include credit somewhere visible:
 
@@ -85,7 +85,7 @@ This can go in:
 - credits file
 - readme inside your mod
 
-## ⚙️ Requirements
+## Requirements
 
 requirements.txt is only required if you are running KCreator from the source code (GitHub clone).
 
@@ -97,22 +97,22 @@ However, if you are using the source code, to install the requirements use:
 pip install -r requirements.txt
 ```
 
-## 🔄 Versioning
+## Versioning
 
-- 🧪 GitHub repo → development builds (latest features)
-- 🌐 Website → packaged user-friendly version
-- 📦 Releases → stable tested versions
+- GitHub repo → development builds (latest features)
+- Website → packaged user-friendly version
+- Releases → stable tested versions
 
 All versions stay aligned when possible.
 
 
-## 💬 Final note
+## Final note
 
 KCreator is built to make modding feel less like setup work and more like creation.
 
-Have fun building 🚀
+Have fun building
 
 
-## 📬 Contact
+## Contact
 
 OllyM06
