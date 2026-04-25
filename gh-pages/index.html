@@ -1,144 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>KCreator</title>
-
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="responsive.css"/>
 </head>
 
 <body>
 
-  <!-- HEADER -->
-  <header class="top-header">
-    <div class="logo">
-      <img src="logo.png" alt="KCreator Logo">
-      <span>KCreator</span>
-    </div>
-
-    <nav>
-      <a href="#features">Features</a>
-      <a href="#install">Install</a>
-      <a href="https://github.com/OllyM06/KCreator">GitHub</a>
-    </nav>
-  </header>
-
-  <!-- HERO -->
   <section class="hero">
+    <div class="hero-left">
+      <div class="title">KCreator</div>
+      <div class="desc">
+        KCreator is a UI-based tool that simplifies Kerbal Space Program mod creation, helping you build, organise, and manage mods faster with a cleaner, more intuitive workflow.
+      </div>
 
-    <div class="hero-content">
+      <div class="buttons">
+        <a href="#" class="btn btn-primary">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v12m0 0l4-4m-4 4l-4-4M5 21h14" />
+          </svg>
+          Download
+        </a>
 
-      <!-- LEFT -->
-      <div class="hero-left">
-        <h1>KCreator</h1>
+        <a href="https://github.com/OllyM06/KCreator" target="_blank" class="btn btn-outline">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.085 1.84 1.236 1.84 1.236 1.07 1.834 2.807 1.304 3.492.997.108-.775.418-1.305.762-1.604-2.665-.303-5.466-1.334-5.466-5.93 0-1.31.468-2.381 1.235-3.221-.124-.303-.535-1.523.117-3.176 0 0 1.008-.323 3.301 1.23a11.52 11.52 0 013.003-.404c1.02.005 2.047.138 3.003.404 2.292-1.553 3.298-1.23 3.298-1.23.653 1.653.242 2.873.118 3.176.77.84 1.233 1.911 1.233 3.221 0 4.61-2.805 5.625-5.475 5.921.43.371.823 1.102.823 2.222v3.293c0 .321.216.694.825.576C20.565 21.796 24 17.298 24 12c0-6.63-5.373-12-12-12z"/>
+          </svg>
+          GitHub
+        </a>
+      </div>
+      <a href="other-versions.html" class="hero-link">View Other Versions</a>
+    </div>
 
-        <p>
-          A development tool designed to help you create mods for
-          <strong>Kerbal Space Program</strong>.
-        </p>
+    <div class="hero-right">
+      <img src="assets/hero-image.png" alt="Hero Image"/>
+    </div>
 
-        <div class="hero-buttons">
-          <a class="btn-primary" href="https://ollym06.github.io/KCreator">
-            Download
-          </a>
+  </section>
 
-          <a class="btn-secondary" href="https://github.com/OllyM06/KCreator">
-            Source Code
-          </a>
+  <h1 class="section-title">Latest News</h1>
+
+  <section class="grid-section">
+    <div class="grid">
+
+      <div class="card">
+        <img src="img1.jpg">
+        <div class="card-content">
+          <div class="card-title">KCreator v0.0.1 First Release (alpha)</div>
+          <div class="card-desc">The first alpha release of KCreator is now available!</div>
         </div>
       </div>
 
-      <!-- RIGHT -->
-      <div class="hero-right">
-        <div class="hero-card">
-
-          <div class="hero-logo">
-            K
-          </div>
-
-          <h3>Modding made simple</h3>
-
-          <p>
-            Organise, build, and manage KSP mod projects with a clean workflow
-            designed for creators of all levels.
-          </p>
-
-        </div>
-      </div>
-
     </div>
-
   </section>
-
-  <!-- FEATURES -->
-  <section class="features" id="features">
-
-    <div class="features-container">
-
-      <h2>What KCreator does</h2>
-
-      <ul>
-        <li>🧱 Create and organise KSP mod projects</li>
-        <li>🗂️ Manage mod structure and files</li>
-        <li>⚡ Speed up repetitive setup tasks</li>
-        <li>🛠️ Keep projects clean and organised</li>
-        <li>🚀 Make mod development easier</li>
-      </ul>
-
-    </div>
-
-  </section>
-
-  <!-- AUDIENCE -->
-  <section class="audience">
-
-    <div class="features-container">
-
-      <h2>Who it's for</h2>
-
-      <ul>
-        <li>👶 Beginners learning KSP modding</li>
-        <li>🧑‍💻 Developers improving workflow</li>
-        <li>🎮 Players making their first mods</li>
-        <li>🚀 Anyone building for KSP</li>
-      </ul>
-
-    </div>
-
-  </section>
-
-  <!-- INSTALL -->
-  <section class="install" id="install">
-
-    <div class="features-container">
-
-      <h2>Install KCreator</h2>
-
-      <div class="install-links">
-
-        <a class="btn-primary" href="https://ollym06.github.io/KCreator">
-          Website Download
-        </a>
-
-        <a class="btn-secondary" href="https://github.com/OllyM06/KCreator/releases">
-          GitHub Releases
-        </a>
-
-        <a class="btn-secondary" href="https://github.com/OllyM06/KCreator">
-          Source Code
-        </a>
-
-      </div>
-
-    </div>
-
-  </section>
-
-  <!-- FOOTER -->
-  <footer>
-    <p>© KCreator by OllyM06</p>
-  </footer>
 
 </body>
 </html>
