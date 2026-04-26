@@ -16,8 +16,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 80px 10%;
-  gap: 40px;
+  padding: 60px 10% 40px;
+  gap: 30px;
   background: linear-gradient(to bottom, #1d4ed8, #1e3a8a);
 }
 
@@ -27,11 +27,10 @@ body {
 
 .hero-link {
   display: inline-block;
-  margin-top: 15px;
+  margin-top: 12px;
   color: #dbeafe;
   text-decoration: none;
   font-size: 14px;
-  cursor: pointer;
 }
 
 .hero-link:hover {
@@ -39,16 +38,10 @@ body {
   text-decoration: underline;
 }
 
-.other-versions {
-  font-size: 14px;
-  color: #e2e8f0;
-  margin-bottom: 10px;
-}
-
 .title {
   font-size: 42px;
   font-weight: bold;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
   line-height: 1.2;
   color: #ffffff;
 }
@@ -57,34 +50,32 @@ body {
   font-size: 18px;
   color: #e2e8f0;
   max-width: 500px;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 
 /* BUTTONS */
 .buttons {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
 .btn {
-  padding: 12px 20px;
+  padding: 11px 18px;
   border-radius: 8px;
-  font-size: 16px;
+  font-size: 15px;
   cursor: pointer;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   transition: 0.2s ease;
-  line-height: 1;
 }
 
 .btn-primary {
   background: #f59e0b;
   color: #0f172a;
-  border: none;
 }
 
 .btn-primary:hover {
@@ -111,20 +102,34 @@ body {
 .hero-right img {
   width: 100%;
   max-width: 520px;
-  height: auto;
   border-radius: 6px;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.25);
 }
 
-/* GRID SECTION */
-.grid-section {
-  padding: 60px 10%;
+/* SECTION WRAPPERS */
+.grid-section,
+.software-section {
+  padding: 35px 10%;
+  display: flow-root;
 }
 
+/* UNIVERSAL TITLE */
+.page-title {
+  font-size: 30px !important;
+  font-weight: bold !important;
+  text-align: center !important;
+  margin: 0 0 30px 0 !important;
+  padding: 0 !important;
+  display: block;
+  width: 100%;
+}
+
+/* GRID */
 .grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+  gap: 18px;
+  margin: 0;
 }
 
 /* CARD */
@@ -132,35 +137,108 @@ body {
   background: #f8fafc;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.05);
   transition: 0.2s ease;
 }
 
 .card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-4px);
 }
 
-/* CARD IMAGE */
 .card img {
   width: 100%;
-  height: 340px;
+  height: 160px;
   object-fit: cover;
 }
 
-/* CARD TEXT */
 .card-content {
-  padding: 16px;
+  padding: 14px;
 }
 
 .card-title {
   font-size: 20px;
   font-weight: bold;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .card-desc {
   font-size: 14px;
   color: #475569;
+}
+
+/* VERSIONS GRIDS */
+.featured-versions,
+.version-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin: 0 0 20px 0;
+}
+
+/* VERSION CARD */
+.version-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  transition: 0.2s ease;
+}
+
+.version-card:hover {
+  transform: translateY(-3px);
+}
+
+/* BADGE */
+.badge {
+  display: inline-block;
+  font-size: 12px;
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: #e2e8f0;
+  margin-bottom: 8px;
+}
+
+.badge-recommended {
+  display: inline-block;
+  font-size: 12px;
+  padding: 3px 7px;
+  border-radius: 6px;
+
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #16a34a;
+
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+/* TEXT */
+.version-name {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.version-info {
+  font-size: 14px;
+  color: #475569;
+  margin-bottom: 10px;
+}
+
+/* BUTTON */
+.version-btn {
+  display: inline-block;
+  padding: 9px 12px;
+  background: #1d4ed8;
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 14px;
+  transition: 0.2s ease;
+}
+
+.version-btn:hover {
+  background: #2563eb;
 }
 
 /* ICONS */
@@ -169,12 +247,4 @@ svg {
   height: 26px;
   display: flex;
   flex-shrink: 0;
-}
-
-/* HEADINGS */
-.section-title {
-  font-size: 30px;
-  font-weight: bold;
-  margin-top: 20px;
-  text-align: center;
 }

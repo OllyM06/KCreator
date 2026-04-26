@@ -1,15 +1,95 @@
-@media (max-width: 768px) {
+/* TABLETS (≤ 1024px) */
+@media (max-width: 1024px) {
+
   .hero {
-    flex-direction: column;
-    text-align: center;
+    padding: 60px 5%;
+    gap: 30px;
+  }
+
+  .title {
+    font-size: 34px;
   }
 
   .desc {
-    margin: 0 auto;
-    margin-bottom: 30px;
+    font-size: 16px;
+  }
+
+  .hero-right img {
+    max-width: 400px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+
+/* PHONES (≤ 768px) */
+@media (max-width: 768px) {
+
+  .hero {
+    flex-direction: column;
+    text-align: center;
+    padding: 50px 5%;
+  }
+
+  .hero-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+
+  .desc {
+    font-size: 15px;
+    margin: 0 auto 20px auto;
   }
 
   .buttons {
     justify-content: center;
+  }
+
+  .hero-link {
+    text-align: center;
+  }
+
+  .hero-right img {
+    max-width: 100%;
+    margin-top: 20px;
+  }
+
+  /* GRID → STACK */
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .card img {
+    height: 200px;
+  }
+}
+
+/* SMALL PHONES (≤ 480px) */
+@media (max-width: 480px) {
+
+  .title {
+    font-size: 24px;
+  }
+
+  .desc {
+    font-size: 14px;
+  }
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .buttons {
+    flex-direction: column;
+    width: 100%;
   }
 }
