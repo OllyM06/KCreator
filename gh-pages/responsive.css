@@ -22,6 +22,20 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 16px;
   }
+
+  /* CONTENT */
+  .content {
+    max-width: 750px;
+    padding: 50px 20px;
+  }
+
+  .content h2 {
+    font-size: 24px;
+  }
+
+  .content p {
+    font-size: 15.5px;
+  }
 }
 
 /* PHONES (≤ 768px) */
@@ -70,6 +84,23 @@
   .card img {
     height: 200px;
   }
+
+  /* CONTENT */
+  .content {
+    max-width: 100%;
+    padding: 40px 16px;
+  }
+
+  .content h2 {
+    font-size: 22px;
+    border-left-width: 3px;
+    padding-left: 10px;
+  }
+
+  .content p {
+    font-size: 15px;
+    line-height: 1.65;
+  }
 }
 
 /* SMALL PHONES (≤ 480px) */
@@ -91,5 +122,18 @@
   .buttons {
     flex-direction: column;
     width: 100%;
+  }
+
+  /* CONTENT */
+  .content {
+    padding: 30px 14px;
+  }
+
+  .content h2 {
+    font-size: 20px;
+  }
+
+  .content p {
+    font-size: 14px;
   }
 }

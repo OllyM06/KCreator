@@ -11,6 +11,46 @@ body {
   min-height: 100vh;
 }
 
+/* NAVBAR */
+.navbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 20px 10%;
+  z-index: 1000;
+
+  background: transparent;
+}
+
+.nav-left {
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  text-decoration: none;
+}
+
+.nav-right {
+  display: flex;
+  gap: 18px;
+}
+
+.nav-right a {
+  color: #e2e8f0;
+  text-decoration: none;
+  font-size: 14px;
+  transition: 0.2s ease;
+}
+
+.nav-right a:hover {
+  color: #ffffff;
+}
+
 /* HERO */
 .hero {
   display: flex;
@@ -139,6 +179,10 @@ body {
   overflow: hidden;
   box-shadow: 0 8px 20px rgba(0,0,0,0.05);
   transition: 0.2s ease;
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
 }
 
 .card:hover {
@@ -247,4 +291,28 @@ svg {
   height: 26px;
   display: flex;
   flex-shrink: 0;
+}
+
+.content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 60px 20px;
+  background: #ffffff;
+  color: #1a1a1a;
+}
+
+.content h2 {
+  font-size: 26px;
+  margin-top: 50px;
+  margin-bottom: 15px;
+  padding-left: 12px;
+  border-left: 4px solid #4a90e2;
+  color: #111111;
+}
+
+.content p {
+  font-size: 16px;
+  line-height: 1.7;
+  color: #333333;
+  margin: 12px 0;
 }
