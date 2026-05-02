@@ -106,6 +106,15 @@ class KCreator(tk.Tk):
     def validate_int(self, P):
         return P.isdigit() or P == ""
 
+    def validate_float(self, P):
+        if P == "":
+            return True
+        try:
+            float(P)
+            return True
+        except ValueError:
+            return False
+
     def parse_node_stack(self, entry):
         try:
             return [float(x.strip()) for x in entry.split(",")]
@@ -190,6 +199,7 @@ class KCreator(tk.Tk):
         self.clear_window()
         self.part_type = part_type
         self.vcmd = (self.register(self.validate_int), '%P')
+        self.float_vcmd = (self.register(self.validate_float), '%P')
 
         notebook = ttk.Notebook(self)
         notebook.pack(fill='both', expand=True, padx=0, pady=0)
@@ -295,7 +305,7 @@ class KCreator(tk.Tk):
             self.description.pack(pady=5)
 
             tk.Label(basic_tab, text="Thrust (kN):").pack(pady=5)
-            self.thrust = tk.Entry(basic_tab, width=20, validate='key', validatecommand=self.vcmd)
+            self.thrust = tk.Entry(basic_tab, width=20, validate='key', validatecommand=self.float_vcmd)
             self.thrust.pack(pady=5)
 
             # Model
