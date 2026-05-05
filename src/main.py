@@ -1,13 +1,15 @@
 import os
 import json
+from re import S
 import webbrowser
 import tkinter as tk
-import src.menu as menu
+import menu as menu
+import modules.style_tools as style_tools
 
 from tkinter import ttk, filedialog, messagebox, simpledialog
-from src.modules.UITools import ToolTip
-from src.modules.imageTools import check_flag_size
-from src.modules.packager import pkg_parts, pkg_flags, update_mod_version as update_mod
+from modules.UI_tools import ToolTip
+from modules.image_tools import check_flag_size
+from modules.packager import pkg_parts, pkg_flags, update_mod_version as update_mod
 
 class KCreator(tk.Tk):
     def __init__(self, parts_data, mod_name, workspace_dir, mod_ver):
@@ -105,9 +107,9 @@ class KCreator(tk.Tk):
 
         # ------------------ Fuel Tank ------------------
         if part_type == "FT":
-            basic_tab = ttk.Frame(notebook)
-            model_tab = ttk.Frame(notebook)
-            advanced_tab = ttk.Frame(notebook)
+            basic_tab = tk.Frame(notebook)
+            model_tab = tk.Frame(notebook)
+            advanced_tab = tk.Frame(notebook)
 
             notebook.add(basic_tab, text='Basic')
             notebook.add(model_tab, text='Model')
@@ -171,9 +173,9 @@ class KCreator(tk.Tk):
 
         # ------------------ Engine ------------------
         elif part_type == "ENG":
-            basic_tab = ttk.Frame(notebook)
-            model_tab = ttk.Frame(notebook)
-            advanced_tab = ttk.Frame(notebook)
+            basic_tab = tk.Frame(notebook)
+            model_tab = tk.Frame(notebook)
+            advanced_tab = tk.Frame(notebook)
 
             notebook.add(basic_tab, text='Basic')
             notebook.add(model_tab, text='Model')
@@ -236,7 +238,7 @@ class KCreator(tk.Tk):
 
         # ------------------ Flag ------------------
         elif part_type == "FLAG":
-            basic_tab = ttk.Frame(notebook)
+            basic_tab = tk.Frame(notebook)
             notebook.add(basic_tab, text='Basic')
 
             tk.Label(basic_tab, text="Flag Name:").pack(pady=5)
@@ -507,7 +509,9 @@ class KCreator(tk.Tk):
 
 def start_app(parts_data, mod_name, workspace_dir, mod_version):
     app = KCreator(parts_data=parts_data, mod_name=mod_name, workspace_dir=workspace_dir, mod_ver=mod_version)
-    print(f"KCreator v{app.version} Copyright © 2025 TheOR30")
+    style_tools.auto_hook(app)  # auto-apply dark mode to all widgets
+    style_tools.enable_auto_refresh(app)  # ensure new widgets also get styled
+    print(f"KCreator v{app.version} Copyright © 2025 OllyM06")
     app.mainloop()
 
 if __name__ == "__main__":

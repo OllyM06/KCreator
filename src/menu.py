@@ -1,12 +1,15 @@
 import os
 import json
 from pathlib import Path
+from tkinter import ttk
+import modules.style_tools as style_tools
 
 import tkinter as tk
 from tkinter import filedialog, messagebox, simpledialog
 from PIL import Image, ImageTk  # Pillow for image resizing
+from modules import style_tools
 
-import src.main as main
+import main as main
 
 
 class KCreatorMenu(tk.Tk):
@@ -135,7 +138,12 @@ class KCreatorMenu(tk.Tk):
 
         recent_frm.pack(fill="x", padx=10, pady=8)
         tk.Label(recent_frm, text="Recent Projects:", font=("Arial", 10, "bold")).pack(pady=5)
+        sep = ttk.Separator(recent_frm, orient="horizontal")
+        sep.pack(fill="x", pady=5)
+        # then populate recent projects
         self.view_recent(recent_frm)
+        sep = ttk.Separator(recent_frm, orient="horizontal")
+        sep.pack(fill="x", pady=10)
 
         refresh_button = tk.Button(self, text="Refresh Recent", command=self.build_ui)
         refresh_button.pack(pady=5)
@@ -255,6 +263,8 @@ class KCreatorMenu(tk.Tk):
 
 def start_menu():
     app = KCreatorMenu()
+    style_tools.auto_hook(app)  # auto-apply dark mode to all widgets
+    style_tools.enable_auto_refresh(app)  # ensure new widgets also get styled
     app.mainloop()
 
 
