@@ -10,9 +10,10 @@ if __package__ is None or __package__ == "":
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from tkinter import ttk, filedialog, messagebox, simpledialog
-from src.modules.UITools import ToolTip
-from src.modules.imageTools import check_flag_size
-from src.modules.packager import pkg_parts, pkg_flags, update_mod_version as update_mod
+from modules.UI_tools import ToolTip
+from modules.image_tools import check_flag_size
+from modules.packager import pkg_parts, pkg_flags, update_mod_version as update_mod
+from modules.style_tools import auto_hook, enable_auto_refresh
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -711,10 +712,13 @@ class KCreator(tk.Tk):
 
 def start_app(parts_data, mod_name, workspace_dir, mod_version, mod_author):
     app = KCreator(parts_data=parts_data, mod_name=mod_name, workspace_dir=workspace_dir, mod_ver=mod_version, mod_author=mod_author)
+    # Dark mode and auto-refresh hooks
+    auto_hook(app)
+    enable_auto_refresh(app)
     print(f"KCreator v{app.version} Copyright © 2025 TheOR30")
     app.mainloop()
 
 if __name__ == "__main__":
-    import src.menu as menu
+    import menu
     menu.start_menu()
 

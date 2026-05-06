@@ -1,10 +1,11 @@
 import os
 import json
-from pathlib import Path
 import sys
+from pathlib import Path
+from modules.style_tools import auto_hook, enable_auto_refresh
 
 import tkinter as tk
-from tkinter import filedialog, messagebox, simpledialog
+from tkinter import filedialog, messagebox, simpledialog, ttk
 try:
     from PIL import Image, ImageTk  # Pillow for image resizing
 except ImportError:
@@ -20,7 +21,7 @@ DEFAULTS_DIR = os.path.join(SRC_DIR, "defaults")
 
 
 def start_main(parts_data, mod_name, workspace_dir, mod_version, mod_author):
-    import src.main as main
+    import main as main
     main.start_app(parts_data, mod_name, workspace_dir, mod_version, mod_author)
 
 
@@ -283,8 +284,9 @@ class KCreatorMenu(tk.Tk):
 
 def start_menu():
     app = KCreatorMenu()
-    style_tools.auto_hook(app)  # auto-apply dark mode to all widgets
-    style_tools.enable_auto_refresh(app)  # ensure new widgets also get styled
+    # Apply dark mode styling and auto-refresh hooks
+    auto_hook(app)  # auto-apply dark mode to all widgets
+    enable_auto_refresh(app)  # ensure new widgets also get styled
     app.mainloop()
 
 
