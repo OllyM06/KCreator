@@ -1,15 +1,27 @@
 import os
 import json
 from pathlib import Path
-from tkinter import ttk
-import modules.style_tools as style_tools
+import sys
 
 import tkinter as tk
 from tkinter import filedialog, messagebox, simpledialog
-from PIL import Image, ImageTk  # Pillow for image resizing
-from modules import style_tools
+try:
+    from PIL import Image, ImageTk  # Pillow for image resizing
+except ImportError:
+    Image = None
+    ImageTk = None
 
-import main as main
+if __package__ is None or __package__ == "":
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SRC_DIR = os.path.dirname(os.path.abspath(__file__))
+DEFAULTS_DIR = os.path.join(SRC_DIR, "defaults")
+
+
+def start_main(parts_data, mod_name, workspace_dir, mod_version, mod_author):
+    import src.main as main
+    main.start_app(parts_data, mod_name, workspace_dir, mod_version, mod_author)
 
 
 class KCreatorMenu(tk.Tk):
@@ -17,13 +29,14 @@ class KCreatorMenu(tk.Tk):
         super().__init__()
         self.title("KCreator")
         self.geometry("400x400")
-        self.iconbitmap("kcreator.ico")
+        self.iconbitmap(os.path.join(ROOT_DIR, "kcreator.ico"))
 
         # Project state
         self.parts_data = ""
         self.mod_name = ""
         self.mod_logo = ""
         self.mod_version = ""
+        self.mod_author = ""
         self.workspace_dir = ""
 
         # AppData setup
@@ -95,7 +108,7 @@ class KCreatorMenu(tk.Tk):
                 mod_logo = ""
 
             mod_photo = None
-            if mod_logo and os.path.exists(mod_logo):
+            if Image is not None and ImageTk is not None and mod_logo and os.path.exists(mod_logo):
                 try:
                     img = Image.open(mod_logo)
                     img.thumbnail((64, 64))
@@ -170,6 +183,9 @@ class KCreatorMenu(tk.Tk):
         mod = simpledialog.askstring("Mod Name", "Enter the mod name:")
         if not mod:
             return
+        author = simpledialog.askstring("Author Username", "Enter the Author username:")
+        if not author:
+            return
         workspace_dir = filedialog.askdirectory(title="Select workspace directory")
         if not workspace_dir:
             return
@@ -179,9 +195,10 @@ class KCreatorMenu(tk.Tk):
             filetypes=[("Image Files", "*.png *.jpg *.jpeg")]
         )
         if not mod_logo:
-            mod_logo = "defaults/logo.png"
+            mod_logo = os.path.join(DEFAULTS_DIR, "logo.png")
 
         self.mod_name = mod
+        self.mod_author = author
         self.workspace_dir = workspace_dir
         self.mod_logo = mod_logo
         self.mod_version = 0.0
@@ -195,6 +212,7 @@ class KCreatorMenu(tk.Tk):
             json.dump(
                 {
                     "mod_name": self.mod_name,
+                    "mod_author": self.mod_author,
                     "mod_logo": self.mod_logo,
                     "mod_version": self.mod_version,
                     "parts": {}
@@ -205,7 +223,7 @@ class KCreatorMenu(tk.Tk):
 
         self.update_recent(self.parts_data)
         self.destroy()
-        main.start_app(self.parts_data, self.mod_name, self.workspace_dir, self.mod_version)
+        start_main(self.parts_data, self.mod_name, self.workspace_dir, self.mod_version, self.mod_author)
 
     def open_project(self):
         filename = filedialog.askopenfilename(
@@ -221,11 +239,12 @@ class KCreatorMenu(tk.Tk):
             self.parts_data = filename
             self.workspace_dir = os.path.dirname(filename)
             self.mod_name = data.get("mod_name", "Unknown")
+            self.mod_author = data.get("mod_author", "KSPModCreator")
             self.mod_version = data.get("mod_version", "0.1.0")
 
             self.update_recent(filename)
             self.destroy()
-            main.start_app(self.parts_data, self.mod_name, self.workspace_dir, self.mod_version)
+            start_main(self.parts_data, self.mod_name, self.workspace_dir, self.mod_version, self.mod_author)
         except Exception as e:
             messagebox.showerror("Error", f"Failed to open file: {e}")
 
@@ -236,10 +255,11 @@ class KCreatorMenu(tk.Tk):
             self.parts_data = filepath
             self.workspace_dir = os.path.dirname(filepath)
             self.mod_name = data.get("mod_name", "Unknown")
+            self.mod_author = data.get("mod_author", "KSPModCreator")
             self.mod_version = data.get("mod_version", "0.1.0")
 
             self.destroy()
-            main.start_app(self.parts_data, self.mod_name, self.workspace_dir, self.mod_version)
+            start_main(self.parts_data, self.mod_name, self.workspace_dir, self.mod_version, self.mod_author)
         except Exception as e:
             messagebox.showerror("Error", f"Failed to open file: {e}")
 

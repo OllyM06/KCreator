@@ -28,7 +28,7 @@ def update_mod_version(json_path="mod_info.json"):
     print(f"Updated mod version: {new_version}")
     return new_version
 
-def pkg_parts(json_path="parts.json", output_dir="PackagedParts/parts", mod_version=None):
+def pkg_parts(json_path="parts.json", output_dir="PackagedParts/parts", mod_version=None, mod_author="KSPModCreator"):
     if not os.path.exists(json_path):
         raise FileNotFoundError("No parts.json found!")
 
@@ -60,7 +60,9 @@ def pkg_parts(json_path="parts.json", output_dir="PackagedParts/parts", mod_vers
 
         if texture_path and os.path.exists(texture_path) and texture_filename.endswith('.png'):
             dds_filename = texture_filename.replace('.png', '.dds')
-            img.png_to_dds(texture_path, os.path.join(part_dir, dds_filename))
+            if not img.png_to_dds(texture_path, os.path.join(part_dir, dds_filename)):
+                shutil.copy(texture_path, part_dir)
+                dds_filename = texture_filename
         else:
             if texture_path and os.path.exists(texture_path):
                 shutil.copy(texture_path, part_dir)
@@ -71,7 +73,7 @@ def pkg_parts(json_path="parts.json", output_dir="PackagedParts/parts", mod_vers
             "{",
             f"  name = {name.replace(' ', '_')}",
             "  module = Part",
-            "  author = KSPModCreator",
+            f"  author = {mod_author}",
             f"  version = {mod_version}",  # embed version here
             "",
             "  MODEL",
@@ -91,8 +93,8 @@ def pkg_parts(json_path="parts.json", output_dir="PackagedParts/parts", mod_vers
 
         cfg_lines += [
             f"  TechRequired = {pdata.get('tech_required', 'basicRocketry')}",
-            "  entryCost = 1000",
-            "  cost = 150",
+            f"  entryCost = {pdata.get('entry_cost', 1000)}",
+            f"  cost = {pdata.get('cost', 150)}",
             f"  category = {CATEGORY_MAP.get(pdata['type'], 'Utility')}",
             "  subcategory = 0",
             f"  title = {name}",
@@ -105,7 +107,7 @@ def pkg_parts(json_path="parts.json", output_dir="PackagedParts/parts", mod_vers
             "  minimum_drag = 0.2",
             "  angularDrag = 2",
             "  crashTolerance = 6",
-            "  maxTemp = 2000",
+            f"  maxTemp = {pdata.get('max_temp', 2000)}",
             "  bulkheadProfiles = size1, srf",
             ""
         ]

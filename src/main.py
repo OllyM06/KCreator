@@ -1,28 +1,37 @@
+from json.tool import main
 import os
 import json
 from re import S
 import webbrowser
 import tkinter as tk
-import menu as menu
-import modules.style_tools as style_tools
+import sys
+
+if __package__ is None or __package__ == "":
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from tkinter import ttk, filedialog, messagebox, simpledialog
-from modules.UI_tools import ToolTip
-from modules.image_tools import check_flag_size
-from modules.packager import pkg_parts, pkg_flags, update_mod_version as update_mod
+from src.modules.UITools import ToolTip
+from src.modules.imageTools import check_flag_size
+from src.modules.packager import pkg_parts, pkg_flags, update_mod_version as update_mod
+
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SRC_DIR = os.path.dirname(os.path.abspath(__file__))
+DEFAULTS_DIR = os.path.join(SRC_DIR, "defaults")
 
 class KCreator(tk.Tk):
-    def __init__(self, parts_data, mod_name, workspace_dir, mod_ver):
+    def __init__(self, parts_data, mod_name, workspace_dir, mod_ver, mod_author):
         super().__init__()
         self.parts_data = parts_data
         self.mod_name = mod_name
         self.mod_version = mod_ver
+        self.mod_author = mod_author
         self.workspace_dir = workspace_dir
         self.version = "0.0.0"
         self.title(f"{self.mod_name} KCreator v{self.version}")
         self.geometry("700x420")
-        self.iconbitmap("kcreator.ico")
+        self.iconbitmap(os.path.join(ROOT_DIR, "kcreator.ico"))
         self.part_type = None
+        self.editing_part_name = None
         self.build_ui()
 
     def clear_window(self):
@@ -75,6 +84,9 @@ class KCreator(tk.Tk):
             tk.Label(self, text=f"Description: {part.get('description', 'N/A')}").pack(pady=5)
             tk.Label(self, text=f"Model: {part.get('model', part.get('texture', 'N/A'))}").pack(pady=5)
             tk.Label(self, text=f"Capacity: {part.get('capacity', 'N/A')} units").pack(pady=5)
+            tk.Label(self, text=f"Entry Cost: {part.get('entry_cost', '1000')}").pack(pady=5)
+            tk.Label(self, text=f"Cost: {part.get('cost', '150')}").pack(pady=5)
+            tk.Label(self, text=f"Max Temp: {part.get('max_temp', '2000')}").pack(pady=5)
             tk.Label(self, text=f"Node Stack Top: {part.get('node_stack_top', 'N/A')}").pack(pady=5)
             tk.Label(self, text=f"Node Stack Bottom: {part.get('node_stack_bottom', 'N/A')}").pack(pady=5)
         elif part['type'] == "Engine":
@@ -82,37 +94,145 @@ class KCreator(tk.Tk):
             tk.Label(self, text=f"Model: {part.get('model', part.get('texture', 'N/A'))}").pack(pady=5)
             tk.Label(self, text=f"Thrust: {part.get('thrust', 'N/A')} kN").pack(pady=5)
             tk.Label(self, text=f"Fuel Type: {part.get('fuel_type', 'N/A')}").pack(pady=5)
+            tk.Label(self, text=f"Entry Cost: {part.get('entry_cost', '1000')}").pack(pady=5)
+            tk.Label(self, text=f"Cost: {part.get('cost', '150')}").pack(pady=5)
+            tk.Label(self, text=f"Max Temp: {part.get('max_temp', '2000')}").pack(pady=5)
         elif part['type'] == "Flag":
             tk.Label(self, text=f"Texture: {part.get('texture', 'N/A')}").pack(pady=5)
 
+        if part['type'] != "Flag":
+            tk.Button(self, text="Edit Part", command=lambda: self.edit_part(part_name)).pack(pady=5)
         tk.Button(self, text="Delete Part", fg="red", command=lambda: self.delete_part(part_name)).pack(pady=10)
         tk.Button(self, text="Back", command=self.build_ui).pack(pady=10)
 
     def validate_int(self, P):
         return P.isdigit() or P == ""
 
+    def validate_float(self, P):
+        if P == "":
+            return True
+        try:
+            float(P)
+            return True
+        except ValueError:
+            return False
+
     def parse_node_stack(self, entry):
         try:
             return [float(x.strip()) for x in entry.split(",")]
         except ValueError:
             return []
-    
-    def create_part(self, part_type):
-        self.clear_window()
-        self.part_type = part_type
-        self.vcmd = (self.register(self.validate_int), '%P')
 
-        notebook = ttk.Notebook(self)
-        notebook.pack(fill='both', expand=True, padx=0, pady=0)
+    def edit_part(self, part_name):
+        with open(self.parts_data, "r") as f:
+            data = json.load(f)
+            part = data["parts"].get(part_name, {})
+
+        type_map = {
+            "Fuel Tank": "FT",
+            "Engine": "ENG",
+            "Flag": "FLAG"
+        }
+
+        self.editing_part_name = part_name
+        self.create_part(type_map.get(part.get("type"), "FT"), part)
+
+    def fill_common_part_fields(self, part_data):
+        self.name.insert(0, self.editing_part_name or "")
+
+        if hasattr(self, "description"):
+            self.description.insert(0, part_data.get("description", ""))
+
+        if hasattr(self, "model_label"):
+            self.model_path = part_data.get("model", "")
+            model_name = os.path.basename(self.model_path) if self.model_path else "Default"
+            self.model_label.config(text=f"Selected Model: {model_name}")
+
+        if hasattr(self, "texture_label"):
+            self.texture_path = part_data.get("texture", "")
+            texture_name = os.path.basename(self.texture_path) if self.texture_path else "Default"
+            self.texture_label.config(text=f"Selected Texture: {texture_name}")
+
+    def fill_part_fields(self, part_data):
+        self.fill_common_part_fields(part_data)
+
+        if self.part_type == "FT":
+            self.capacity.delete(0, tk.END)
+            self.capacity.insert(0, str(part_data.get("capacity", "")))
+            self.node_stack_top.delete(0, tk.END)
+            self.node_stack_top.insert(0, ", ".join(map(str, part_data.get("node_stack_top", []))))
+            self.node_stack_bottom.delete(0, tk.END)
+            self.node_stack_bottom.insert(0, ", ".join(map(str, part_data.get("node_stack_bottom", []))))
+            self.tech_required.delete(0, tk.END)
+            self.tech_required.insert(0, part_data.get("tech_required", "basicRocketry"))
+            self.fuel_type.delete(0, tk.END)
+            self.fuel_type.insert(0, part_data.get("fuel_type", "LiquidFuel"))
+            self.entry_cost.delete(0, tk.END)
+            self.entry_cost.insert(0, str(part_data.get("entry_cost", 1000)))
+            self.cost.delete(0, tk.END)
+            self.cost.insert(0, str(part_data.get("cost", 150)))
+            self.max_temp.delete(0, tk.END)
+            self.max_temp.insert(0, str(part_data.get("max_temp", 2000)))
+            self.useOxidizer.set(part_data.get("use_oxidizer", 1))
+
+        elif self.part_type == "ENG":
+            self.thrust.delete(0, tk.END)
+            self.thrust.insert(0, str(part_data.get("thrust", "")))
+            self.node_stack_top.delete(0, tk.END)
+            self.node_stack_top.insert(0, ", ".join(map(str, part_data.get("node_stack_top", []))))
+            self.node_stack_bottom.delete(0, tk.END)
+            self.node_stack_bottom.insert(0, ", ".join(map(str, part_data.get("node_stack_bottom", []))))
+            self.tech_required.delete(0, tk.END)
+            self.tech_required.insert(0, part_data.get("tech_required", "basicRocketry"))
+            self.fuel_type.delete(0, tk.END)
+            self.fuel_type.insert(0, part_data.get("fuel_type", "LiquidFuel"))
+            self.entry_cost.delete(0, tk.END)
+            self.entry_cost.insert(0, str(part_data.get("entry_cost", 1000)))
+            self.cost.delete(0, tk.END)
+            self.cost.insert(0, str(part_data.get("cost", 150)))
+            self.max_temp.delete(0, tk.END)
+            self.max_temp.insert(0, str(part_data.get("max_temp", 2000)))
+            self.useOxidizer.set(part_data.get("use_oxidizer", 1))
+
+        elif self.part_type == "FLAG":
+            self.fill_common_part_fields(part_data)
+    
+    def create_part(self, part_type, part_data=None):
+        self.clear_window()
+
+        self.vcmd = (self.register(self.validate_int), "%P")
+        self.float_vcmd = (self.register(self.validate_float), "%P")
+
+        # ---------------- MAIN ----------------
+        main = tk.Frame(self)
+        main.pack(fill='both', expand=True)
+
+        # Proper grid setup
+        main.rowconfigure(0, weight=1)  # notebook expands
+        main.rowconfigure(1, weight=0)  # footer fixed
+        main.columnconfigure(0, weight=1)
+
+        # ---------------- NOTEBOOK ----------------
+        notebook = ttk.Notebook(main)
+        notebook.grid(row=0, column=0, sticky="nsew")
+
+        # ---------------- FOOTER ----------------
+        footer = tk.Frame(main)
+        footer.grid(row=1, column=0, sticky="ew")
+
+        # Optional spacing so it looks nicer
+        footer.configure(pady=5)
 
         # ------------------ Fuel Tank ------------------
         if part_type == "FT":
             basic_tab = tk.Frame(notebook)
             model_tab = tk.Frame(notebook)
+            science_tab = tk.Frame(notebook)
             advanced_tab = tk.Frame(notebook)
 
             notebook.add(basic_tab, text='Basic')
             notebook.add(model_tab, text='Model')
+            notebook.add(science_tab, text='Science')
             notebook.add(advanced_tab, text='Advanced')
 
             # Basic
@@ -151,14 +271,25 @@ class KCreator(tk.Tk):
 
             tk.Button(model_tab, text="Help", command=lambda: webbrowser.open("https://wiki.kerbalspaceprogram.com/wiki/CFG_File_Documentation#Node_Definitions")).pack(pady=5)
 
-            # Advanced
-            tk.Label(advanced_tab, text="Tech Required:").pack(pady=20)
-            self.tech_required = tk.Entry(advanced_tab, width=40)
+            # Science
+            tk.Label(science_tab, text="Tech Required:").pack(pady=20)
+            self.tech_required = tk.Entry(science_tab, width=40)
             self.tech_required.pack(pady=5)
             self.tech_required.insert(0, "basicRocketry")
             ToolTip(self.tech_required, "The technology required to unlock this part.\neg. basicRocketry, fuelSystems, propulsionSystems")
-            tk.Button(advanced_tab, text="Help", command=lambda: webbrowser.open("https://wiki.kerbalspaceprogram.com/index.php?title=CFG_File_Documentation#Editor_Parameters")).pack(pady=5)
 
+            tk.Button(science_tab, text="Help", command=lambda: webbrowser.open("https://wiki.kerbalspaceprogram.com/index.php?title=CFG_File_Documentation#Editor_Parameters")).pack(pady=5)
+            tk.Label(science_tab, text="Entry Cost:").pack(pady=5)
+            self.entry_cost = tk.Entry(science_tab, width=20, validate='key', validatecommand=self.vcmd)
+            self.entry_cost.pack(pady=5)
+            self.entry_cost.insert(0, "1000")
+
+            tk.Label(science_tab, text="Cost:").pack(pady=5)
+            self.cost = tk.Entry(science_tab, width=20, validate='key', validatecommand=self.vcmd)
+            self.cost.pack(pady=5)
+            self.cost.insert(0, "150")
+
+            # Advanced
             tk.Label(advanced_tab, text="Fuel Type:").pack(pady=5)
             self.fuel_type = tk.Entry(advanced_tab, width=30)
             self.fuel_type.pack(pady=5)
@@ -169,16 +300,23 @@ class KCreator(tk.Tk):
             ToolTip(self.fuel_type, "The fuel the tank holds.\n(LiquidFuel, Oxidizer, SolidFuel, MonoPropellant, XenonGas, ElectricCharge)")
             ToolTip(oxidizerCheck, "Check if the tank is a LiquidFuel/Oxidizer.")
 
-            tk.Button(self, text="Save Fuel Tank", command=self.save_part).pack(pady=5)
+            tk.Label(advanced_tab, text="Max Temp:").pack(pady=5)
+            self.max_temp = tk.Entry(advanced_tab, width=20, validate='key', validatecommand=self.vcmd)
+            self.max_temp.pack(pady=5)
+            self.max_temp.insert(0, "2000")
+
+            tk.Button(footer, text="Save Fuel Tank", command=self.save_part).pack(pady=5)
 
         # ------------------ Engine ------------------
         elif part_type == "ENG":
             basic_tab = tk.Frame(notebook)
             model_tab = tk.Frame(notebook)
+            science_tab = tk.Frame(notebook)
             advanced_tab = tk.Frame(notebook)
 
             notebook.add(basic_tab, text='Basic')
             notebook.add(model_tab, text='Model')
+            notebook.add(science_tab, text='Science')
             notebook.add(advanced_tab, text='Advanced')
 
             # Basic
@@ -191,7 +329,7 @@ class KCreator(tk.Tk):
             self.description.pack(pady=5)
 
             tk.Label(basic_tab, text="Thrust (kN):").pack(pady=5)
-            self.thrust = tk.Entry(basic_tab, width=20, validate='key', validatecommand=self.vcmd)
+            self.thrust = tk.Entry(basic_tab, width=20, validate='key', validatecommand=self.float_vcmd)
             self.thrust.pack(pady=5)
 
             # Model
@@ -216,25 +354,42 @@ class KCreator(tk.Tk):
 
             tk.Button(model_tab, text="Help", command=lambda: webbrowser.open("https://wiki.kerbalspaceprogram.com/wiki/CFG_File_Documentation#Node_Definitions")).pack(pady=5)
 
-            # Advanced
-            tk.Label(advanced_tab, text="Tech Required:").pack(pady=20)
-            self.tech_required = tk.Entry(advanced_tab, width=40)
+            # Science
+            tk.Label(science_tab, text="Tech Required:").pack(pady=20)
+            self.tech_required = tk.Entry(science_tab, width=40)
             self.tech_required.pack(pady=5)
             self.tech_required.insert(0, "basicRocketry")
             ToolTip(self.tech_required, "The technology required to unlock this part.\neg. basicRocketry, fuelSystems, propulsionSystems")
 
+            tk.Label(science_tab, text="Entry Cost:").pack(pady=5)
+            self.entry_cost = tk.Entry(science_tab, width=20, validate='key', validatecommand=self.vcmd)
+            self.entry_cost.pack(pady=5)
+            self.entry_cost.insert(0, "1000")
+
+            tk.Label(science_tab, text="Cost:").pack(pady=5)
+            self.cost = tk.Entry(science_tab, width=20, validate='key', validatecommand=self.vcmd)
+            self.cost.pack(pady=5)
+            self.cost.insert(0, "150")
+
+            # Advanced
             tk.Label(advanced_tab, text="Fuel Type:").pack(pady=5)
             self.fuel_type = tk.Entry(advanced_tab, width=30)
             self.fuel_type.pack(pady=5)
             self.fuel_type.insert(0, "LiquidFuel")
+
             self.useOxidizer = tk.IntVar(value=1)
             oxidizerCheck = tk.Checkbutton(advanced_tab, text="Use Oxidizer", variable=self.useOxidizer)
             oxidizerCheck.pack()
             ToolTip(self.fuel_type, "The fuel the engine uses.\n(LiquidFuel, Oxidizer, SolidFuel, MonoPropellant, XenonGas, ElectricCharge)")
             ToolTip(oxidizerCheck, "Check if the engine is a Liquid Fuel/Oxidizer.")
 
+            tk.Label(advanced_tab, text="Max Temp:").pack(pady=5)
+            self.max_temp = tk.Entry(advanced_tab, width=20, validate='key', validatecommand=self.vcmd)
+            self.max_temp.pack(pady=5)
+            self.max_temp.insert(0, "2000")
 
-            tk.Button(self, text="Save Engine", command=self.save_part).pack(pady=5)
+
+            tk.Button(footer, text="Save Engine", command=self.save_part).pack(pady=5)
 
         # ------------------ Flag ------------------
         elif part_type == "FLAG":
@@ -249,9 +404,12 @@ class KCreator(tk.Tk):
             self.texture_label = tk.Label(basic_tab, text="Selected Texture: Default")
             self.texture_label.pack(pady=5)
 
-            tk.Button(self, text="Save Flag", command=self.save_part).pack(pady=5)
+            tk.Button(footer, text="Save Flag", command=self.save_part).pack(pady=5)
 
-        tk.Button(self, text="Cancel", command=self.build_ui).pack(pady=5)
+        tk.Button(footer, text="Cancel", command=self.build_ui).pack(pady=5)
+
+        if part_data:
+            self.fill_part_fields(part_data)
 
     def save_part(self):
         with open(self.parts_data, "r+") as f:
@@ -271,6 +429,8 @@ class KCreator(tk.Tk):
             if "parts" not in data:
                 data["parts"] = {}
 
+            original_part_name = self.editing_part_name
+
             # ------------------ FLAG ------------------
             if self.part_type == "FLAG":
                 part_name = self.name.get().strip()
@@ -279,17 +439,20 @@ class KCreator(tk.Tk):
                 if not part_name:
                     messagebox.showerror("Missing Fields", "Please fill in the following fields:\nName")
                     return
-                if part_name in data["parts"]:
+                if part_name in data["parts"] and part_name != original_part_name:
                     messagebox.showerror("Error", "Part name already exists.")
                     return
 
                 # Validate texture
-                texture_path = getattr(self, "texture_path", None) or "defaults/flag.png"
+                texture_path = getattr(self, "texture_path", None) or os.path.join(DEFAULTS_DIR, "flag.png")
                 if not check_flag_size(texture_path):
                     messagebox.showerror("Invalid Texture", "Flag texture must be 256x160 pixels.")
                     return
 
                 # Save flag
+                if original_part_name and original_part_name != part_name:
+                    data["parts"].pop(original_part_name, None)
+
                 data["parts"][part_name] = {
                     "type": "Flag",
                     "texture": texture_path
@@ -310,7 +473,7 @@ class KCreator(tk.Tk):
                 part_name = self.name.get().strip()
                 if not part_name:
                     missing_fields.append("Name")
-                elif part_name in data["parts"]:
+                elif part_name in data["parts"] and part_name != original_part_name:
                     messagebox.showerror("Error", "Part name already exists.")
                     return
 
@@ -333,19 +496,38 @@ class KCreator(tk.Tk):
                     messagebox.showerror("Invalid Fuel Type", f"'{fuel_type}' is not a valid KSP fuel type.")
                     return
 
+                entry_cost = self.entry_cost.get().strip()
+                if not entry_cost:
+                    missing_fields.append("Entry Cost")
+
+                cost = self.cost.get().strip()
+                if not cost:
+                    missing_fields.append("Cost")
+
+                max_temp = self.max_temp.get().strip()
+                if not max_temp:
+                    missing_fields.append("Max Temp")
+
                 # Report missing fields
                 if missing_fields:
                     messagebox.showerror("Missing Fields", "Please fill in the following fields:\n" + "\n".join(missing_fields))
                     return
 
                 # Save fuel tank
+                if original_part_name and original_part_name != part_name:
+                    data["parts"].pop(original_part_name, None)
+
                 data["parts"][part_name] = {
                     "type": "Fuel Tank",
                     "description": description,
-                    "model": getattr(self, "model_path", "defaults/tank.mu"),
-                    "texture": getattr(self, "texture_path", "defaults/tank.png"),
+                    "model": getattr(self, "model_path", os.path.join(DEFAULTS_DIR, "tank.mu")),
+                    "texture": getattr(self, "texture_path", os.path.join(DEFAULTS_DIR, "tank.png")),
                     "capacity": capacity,
+                    "fuel_type": fuel_type,
                     "tech_required": tech_required,
+                    "entry_cost": int(entry_cost),
+                    "cost": int(cost),
+                    "max_temp": int(max_temp),
                     "node_stack_top": node_top,
                     "node_stack_bottom": node_bottom,
                     "use_oxidizer": self.useOxidizer.get()
@@ -365,7 +547,7 @@ class KCreator(tk.Tk):
                 part_name = self.name.get().strip()
                 if not part_name:
                     missing_fields.append("Name")
-                elif part_name in data["parts"]:
+                elif part_name in data["parts"] and part_name != original_part_name:
                     messagebox.showerror("Error", "Part name already exists.")
                     return
 
@@ -394,20 +576,38 @@ class KCreator(tk.Tk):
                 if not tech_required:
                     missing_fields.append("Tech Required")
 
+                entry_cost = self.entry_cost.get().strip()
+                if not entry_cost:
+                    missing_fields.append("Entry Cost")
+
+                cost = self.cost.get().strip()
+                if not cost:
+                    missing_fields.append("Cost")
+
+                max_temp = self.max_temp.get().strip()
+                if not max_temp:
+                    missing_fields.append("Max Temp")
+
                 # Report missing fields
                 if missing_fields:
                     messagebox.showerror("Missing Fields", "Please fill in the following fields:\n" + "\n".join(missing_fields))
                     return
 
                 # Save engine
+                if original_part_name and original_part_name != part_name:
+                    data["parts"].pop(original_part_name, None)
+
                 data["parts"][part_name] = {
                     "type": "Engine",
                     "description": description,
-                    "model": getattr(self, "model_path", "defaults/eng.mu"),
-                    "texture": getattr(self, "texture_path", "defaults/eng.png"),
+                    "model": getattr(self, "model_path", os.path.join(DEFAULTS_DIR, "eng.mu")),
+                    "texture": getattr(self, "texture_path", os.path.join(DEFAULTS_DIR, "eng.png")),
                     "thrust": thrust_val,
                     "fuel_type": fuel_type,
                     "tech_required": tech_required,
+                    "entry_cost": int(entry_cost),
+                    "cost": int(cost),
+                    "max_temp": int(max_temp),
                     "node_stack_bottom": node_bottom,
                     "node_stack_top": node_top,
                     "use_oxidizer": self.useOxidizer.get()
@@ -418,6 +618,7 @@ class KCreator(tk.Tk):
             json.dump(data, f, indent=4)
             f.truncate()
 
+        self.editing_part_name = None
         # Refresh UI
         self.build_ui()
 
@@ -482,7 +683,8 @@ class KCreator(tk.Tk):
             parts_result = pkg_parts(
                 json_path=parts_data,
                 output_dir=os.path.join(base_dir, "parts"),
-                mod_version=self.mod_version
+                mod_version=self.mod_version,
+                mod_author=self.mod_author
             )
         except Exception as e:
             if isinstance(e, ValueError):
@@ -507,13 +709,12 @@ class KCreator(tk.Tk):
         )
 
 
-def start_app(parts_data, mod_name, workspace_dir, mod_version):
-    app = KCreator(parts_data=parts_data, mod_name=mod_name, workspace_dir=workspace_dir, mod_ver=mod_version)
-    style_tools.auto_hook(app)  # auto-apply dark mode to all widgets
-    style_tools.enable_auto_refresh(app)  # ensure new widgets also get styled
-    print(f"KCreator v{app.version} Copyright © 2025 OllyM06")
+def start_app(parts_data, mod_name, workspace_dir, mod_version, mod_author):
+    app = KCreator(parts_data=parts_data, mod_name=mod_name, workspace_dir=workspace_dir, mod_ver=mod_version, mod_author=mod_author)
+    print(f"KCreator v{app.version} Copyright © 2025 TheOR30")
     app.mainloop()
 
 if __name__ == "__main__":
+    import src.menu as menu
     menu.start_menu()
 
