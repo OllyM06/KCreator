@@ -1,3 +1,4 @@
+from json.tool import main
 import os
 import json
 import webbrowser
@@ -197,21 +198,40 @@ class KCreator(tk.Tk):
     
     def create_part(self, part_type, part_data=None):
         self.clear_window()
-        self.part_type = part_type
-        self.vcmd = (self.register(self.validate_int), '%P')
-        self.float_vcmd = (self.register(self.validate_float), '%P')
 
-        notebook = ttk.Notebook(self)
-        notebook.pack(fill='both', expand=True, padx=0, pady=0)
+        self.vcmd = (self.register(self.validate_int), "%P")
+        self.float_vcmd = (self.register(self.validate_float), "%P")
+
+        # ---------------- MAIN ----------------
+        main = tk.Frame(self)
+        main.pack(fill='both', expand=True)
+
+        # Proper grid setup
+        main.rowconfigure(0, weight=1)  # notebook expands
+        main.rowconfigure(1, weight=0)  # footer fixed
+        main.columnconfigure(0, weight=1)
+
+        # ---------------- NOTEBOOK ----------------
+        notebook = ttk.Notebook(main)
+        notebook.grid(row=0, column=0, sticky="nsew")
+
+        # ---------------- FOOTER ----------------
+        footer = tk.Frame(main)
+        footer.grid(row=1, column=0, sticky="ew")
+
+        # Optional spacing so it looks nicer
+        footer.configure(pady=5)
 
         # ------------------ Fuel Tank ------------------
         if part_type == "FT":
-            basic_tab = ttk.Frame(notebook)
-            model_tab = ttk.Frame(notebook)
-            advanced_tab = ttk.Frame(notebook)
+            basic_tab = tk.Frame(notebook)
+            model_tab = tk.Frame(notebook)
+            science_tab = tk.Frame(notebook)
+            advanced_tab = tk.Frame(notebook)
 
             notebook.add(basic_tab, text='Basic')
             notebook.add(model_tab, text='Model')
+            notebook.add(science_tab, text='Science')
             notebook.add(advanced_tab, text='Advanced')
 
             # Basic
@@ -250,14 +270,25 @@ class KCreator(tk.Tk):
 
             tk.Button(model_tab, text="Help", command=lambda: webbrowser.open("https://wiki.kerbalspaceprogram.com/wiki/CFG_File_Documentation#Node_Definitions")).pack(pady=5)
 
-            # Advanced
-            tk.Label(advanced_tab, text="Tech Required:").pack(pady=20)
-            self.tech_required = tk.Entry(advanced_tab, width=40)
+            # Science
+            tk.Label(science_tab, text="Tech Required:").pack(pady=20)
+            self.tech_required = tk.Entry(science_tab, width=40)
             self.tech_required.pack(pady=5)
             self.tech_required.insert(0, "basicRocketry")
             ToolTip(self.tech_required, "The technology required to unlock this part.\neg. basicRocketry, fuelSystems, propulsionSystems")
-            tk.Button(advanced_tab, text="Help", command=lambda: webbrowser.open("https://wiki.kerbalspaceprogram.com/index.php?title=CFG_File_Documentation#Editor_Parameters")).pack(pady=5)
 
+            tk.Button(science_tab, text="Help", command=lambda: webbrowser.open("https://wiki.kerbalspaceprogram.com/index.php?title=CFG_File_Documentation#Editor_Parameters")).pack(pady=5)
+            tk.Label(science_tab, text="Entry Cost:").pack(pady=5)
+            self.entry_cost = tk.Entry(science_tab, width=20, validate='key', validatecommand=self.vcmd)
+            self.entry_cost.pack(pady=5)
+            self.entry_cost.insert(0, "1000")
+
+            tk.Label(science_tab, text="Cost:").pack(pady=5)
+            self.cost = tk.Entry(science_tab, width=20, validate='key', validatecommand=self.vcmd)
+            self.cost.pack(pady=5)
+            self.cost.insert(0, "150")
+
+            # Advanced
             tk.Label(advanced_tab, text="Fuel Type:").pack(pady=5)
             self.fuel_type = tk.Entry(advanced_tab, width=30)
             self.fuel_type.pack(pady=5)
@@ -268,31 +299,23 @@ class KCreator(tk.Tk):
             ToolTip(self.fuel_type, "The fuel the tank holds.\n(LiquidFuel, Oxidizer, SolidFuel, MonoPropellant, XenonGas, ElectricCharge)")
             ToolTip(oxidizerCheck, "Check if the tank is a LiquidFuel/Oxidizer.")
 
-            tk.Label(advanced_tab, text="Entry Cost:").pack(pady=5)
-            self.entry_cost = tk.Entry(advanced_tab, width=20, validate='key', validatecommand=self.vcmd)
-            self.entry_cost.pack(pady=5)
-            self.entry_cost.insert(0, "1000")
-
-            tk.Label(advanced_tab, text="Cost:").pack(pady=5)
-            self.cost = tk.Entry(advanced_tab, width=20, validate='key', validatecommand=self.vcmd)
-            self.cost.pack(pady=5)
-            self.cost.insert(0, "150")
-
             tk.Label(advanced_tab, text="Max Temp:").pack(pady=5)
             self.max_temp = tk.Entry(advanced_tab, width=20, validate='key', validatecommand=self.vcmd)
             self.max_temp.pack(pady=5)
             self.max_temp.insert(0, "2000")
 
-            tk.Button(self, text="Save Fuel Tank", command=self.save_part).pack(pady=5)
+            tk.Button(footer, text="Save Fuel Tank", command=self.save_part).pack(pady=5)
 
         # ------------------ Engine ------------------
         elif part_type == "ENG":
-            basic_tab = ttk.Frame(notebook)
-            model_tab = ttk.Frame(notebook)
-            advanced_tab = ttk.Frame(notebook)
+            basic_tab = tk.Frame(notebook)
+            model_tab = tk.Frame(notebook)
+            science_tab = tk.Frame(notebook)
+            advanced_tab = tk.Frame(notebook)
 
             notebook.add(basic_tab, text='Basic')
             notebook.add(model_tab, text='Model')
+            notebook.add(science_tab, text='Science')
             notebook.add(advanced_tab, text='Advanced')
 
             # Basic
@@ -330,32 +353,34 @@ class KCreator(tk.Tk):
 
             tk.Button(model_tab, text="Help", command=lambda: webbrowser.open("https://wiki.kerbalspaceprogram.com/wiki/CFG_File_Documentation#Node_Definitions")).pack(pady=5)
 
-            # Advanced
-            tk.Label(advanced_tab, text="Tech Required:").pack(pady=20)
-            self.tech_required = tk.Entry(advanced_tab, width=40)
+            # Science
+            tk.Label(science_tab, text="Tech Required:").pack(pady=20)
+            self.tech_required = tk.Entry(science_tab, width=40)
             self.tech_required.pack(pady=5)
             self.tech_required.insert(0, "basicRocketry")
             ToolTip(self.tech_required, "The technology required to unlock this part.\neg. basicRocketry, fuelSystems, propulsionSystems")
 
+            tk.Label(science_tab, text="Entry Cost:").pack(pady=5)
+            self.entry_cost = tk.Entry(science_tab, width=20, validate='key', validatecommand=self.vcmd)
+            self.entry_cost.pack(pady=5)
+            self.entry_cost.insert(0, "1000")
+
+            tk.Label(science_tab, text="Cost:").pack(pady=5)
+            self.cost = tk.Entry(science_tab, width=20, validate='key', validatecommand=self.vcmd)
+            self.cost.pack(pady=5)
+            self.cost.insert(0, "150")
+
+            # Advanced
             tk.Label(advanced_tab, text="Fuel Type:").pack(pady=5)
             self.fuel_type = tk.Entry(advanced_tab, width=30)
             self.fuel_type.pack(pady=5)
             self.fuel_type.insert(0, "LiquidFuel")
+
             self.useOxidizer = tk.IntVar(value=1)
             oxidizerCheck = tk.Checkbutton(advanced_tab, text="Use Oxidizer", variable=self.useOxidizer)
             oxidizerCheck.pack()
             ToolTip(self.fuel_type, "The fuel the engine uses.\n(LiquidFuel, Oxidizer, SolidFuel, MonoPropellant, XenonGas, ElectricCharge)")
             ToolTip(oxidizerCheck, "Check if the engine is a Liquid Fuel/Oxidizer.")
-
-            tk.Label(advanced_tab, text="Entry Cost:").pack(pady=5)
-            self.entry_cost = tk.Entry(advanced_tab, width=20, validate='key', validatecommand=self.vcmd)
-            self.entry_cost.pack(pady=5)
-            self.entry_cost.insert(0, "1000")
-
-            tk.Label(advanced_tab, text="Cost:").pack(pady=5)
-            self.cost = tk.Entry(advanced_tab, width=20, validate='key', validatecommand=self.vcmd)
-            self.cost.pack(pady=5)
-            self.cost.insert(0, "150")
 
             tk.Label(advanced_tab, text="Max Temp:").pack(pady=5)
             self.max_temp = tk.Entry(advanced_tab, width=20, validate='key', validatecommand=self.vcmd)
@@ -363,11 +388,11 @@ class KCreator(tk.Tk):
             self.max_temp.insert(0, "2000")
 
 
-            tk.Button(self, text="Save Engine", command=self.save_part).pack(pady=5)
+            tk.Button(footer, text="Save Engine", command=self.save_part).pack(pady=5)
 
         # ------------------ Flag ------------------
         elif part_type == "FLAG":
-            basic_tab = ttk.Frame(notebook)
+            basic_tab = tk.Frame(notebook)
             notebook.add(basic_tab, text='Basic')
 
             tk.Label(basic_tab, text="Flag Name:").pack(pady=5)
@@ -378,9 +403,9 @@ class KCreator(tk.Tk):
             self.texture_label = tk.Label(basic_tab, text="Selected Texture: Default")
             self.texture_label.pack(pady=5)
 
-            tk.Button(self, text="Save Flag", command=self.save_part).pack(pady=5)
+            tk.Button(footer, text="Save Flag", command=self.save_part).pack(pady=5)
 
-        tk.Button(self, text="Cancel", command=self.build_ui).pack(pady=5)
+        tk.Button(footer, text="Cancel", command=self.build_ui).pack(pady=5)
 
         if part_data:
             self.fill_part_fields(part_data)
