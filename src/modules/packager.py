@@ -10,24 +10,6 @@ CATEGORY_MAP = {
     "Flag": "Utility"
 }
 
-def update_mod_version(json_path="mod_info.json"):
-    """Update mod version by +0.1 once per run."""
-    if os.path.exists(json_path):
-        with open(json_path, "r") as f:
-            data = json.load(f)
-    else:
-        data = {"mod_version": 0.1}
-
-    current_version = float(data.get("mod_version", 0.1))
-    new_version = round(current_version + 0.1, 1)
-
-    data["mod_version"] = new_version
-    with open(json_path, "w") as f:
-        json.dump(data, f, indent=4)
-
-    print(f"Updated mod version: {new_version}")
-    return new_version
-
 def pkg_parts(json_path="parts.json", output_dir="PackagedParts/parts", mod_version=None, mod_author="KSPModCreator"):
     if not os.path.exists(json_path):
         raise FileNotFoundError("No parts.json found!")

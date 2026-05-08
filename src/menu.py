@@ -30,7 +30,7 @@ class KCreatorMenu(tk.Tk):
         super().__init__()
         self.title("KCreator")
         self.geometry("400x400")
-        self.iconbitmap(os.path.join(ROOT_DIR, "kcreator.ico"))
+        self.iconbitmap(os.path.join(ROOT_DIR, "KCreator.ico"))
 
         # Project state
         self.parts_data = ""
@@ -208,7 +208,7 @@ class KCreatorMenu(tk.Tk):
         os.makedirs(mod_dir, exist_ok=True)
         os.makedirs(os.path.join(mod_dir, "packaged"), exist_ok=True)
 
-        self.parts_data = os.path.join(mod_dir, "parts.kcreator")
+        self.parts_data = os.path.join(mod_dir, "parts.json")
         with open(self.parts_data, "w") as f:
             json.dump(
                 {
@@ -229,7 +229,7 @@ class KCreatorMenu(tk.Tk):
     def open_project(self):
         filename = filedialog.askopenfilename(
             title="Open project file",
-            filetypes=[("Project Files", "*.json *.kcreator")]
+            filetypes=[("Project Files", "*.json *.json")]
         )
         if not filename:
             return

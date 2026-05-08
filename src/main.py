@@ -1,7 +1,5 @@
-from json.tool import main
 import os
 import json
-from re import S
 import webbrowser
 import tkinter as tk
 import sys
@@ -12,7 +10,7 @@ if __package__ is None or __package__ == "":
 from tkinter import ttk, filedialog, messagebox, simpledialog
 from modules.UI_tools import ToolTip
 from modules.image_tools import check_flag_size
-from modules.packager import pkg_parts, pkg_flags, update_mod_version as update_mod
+from modules.packager import pkg_parts, pkg_flags
 from modules.style_tools import auto_hook, enable_auto_refresh
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -30,7 +28,7 @@ class KCreator(tk.Tk):
         self.version = "0.0.0"
         self.title(f"{self.mod_name} KCreator v{self.version}")
         self.geometry("700x420")
-        self.iconbitmap(os.path.join(ROOT_DIR, "kcreator.ico"))
+        self.iconbitmap(os.path.join(ROOT_DIR, "KCreator.ico"))
         self.part_type = None
         self.editing_part_name = None
         self.build_ui()
@@ -657,6 +655,23 @@ class KCreator(tk.Tk):
 
     def run_packager(self):
         mod_dir = os.path.join(self.workspace_dir, "packaged")
+
+        mod_ver = simpledialog.askstring(
+            "Mod Version",
+            "Enter the mod version (e.g. 1.2.8):",
+            initialvalue=self.mod_version
+        )
+
+        # User pressed cancel
+        if mod_ver is None:
+            return
+
+        # Empty version
+        mod_ver = mod_ver.strip()
+        if not mod_ver:
+            messagebox.showerror("Error", "Version cannot be empty.")
+            return
+
         try:
             if os.path.getsize(self.parts_data) <= 2:
                 messagebox.showerror("Error", "No parts to package.")
@@ -665,12 +680,8 @@ class KCreator(tk.Tk):
             messagebox.showerror("Error", f"Cannot read parts.json: {e}")
             return
 
-        # bump version once per run
-        try:
-            self.mod_version = update_mod(self.parts_data)
-        except Exception as e:
-            messagebox.showerror("Error", f"Version update failed: {e}")
-            return
+        # Update version
+        self.mod_version = mod_ver
 
         mod_name = self.mod_name
         base_dir = os.path.join(mod_dir, f"{mod_name}_{self.mod_version}")
