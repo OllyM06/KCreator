@@ -1,7 +1,7 @@
 import os
 import json
 import webbrowser
-import tkinter as tk
+import customtkinter as tk
 import sys
 
 if __package__ is None or __package__ == "":
@@ -11,21 +11,23 @@ from tkinter import ttk, filedialog, messagebox, simpledialog
 from modules.UI_tools import ToolTip
 from modules.image_tools import check_flag_size
 from modules.packager import pkg_parts, pkg_flags
-from modules.style_tools import auto_hook, enable_auto_refresh
+import menu
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULTS_DIR = os.path.join(SRC_DIR, "defaults")
 
-class KCreator(tk.Tk):
+class KCreator(tk.CTk):
     def __init__(self, parts_data, mod_name, workspace_dir, mod_ver, mod_author):
         super().__init__()
+
         self.parts_data = parts_data
         self.mod_name = mod_name
         self.mod_version = mod_ver
         self.mod_author = mod_author
         self.workspace_dir = workspace_dir
         self.version = "0.0.0"
+
         self.title(f"{self.mod_name} KCreator v{self.version}")
         self.geometry("700x420")
         self.iconbitmap(os.path.join(ROOT_DIR, "KCreator.ico"))
@@ -39,35 +41,106 @@ class KCreator(tk.Tk):
 
     def build_ui(self):
         self.clear_window()
-        frm = tk.Frame(self)
-        frm.pack(fill="x", padx=10, pady=8)
+
+        frm = tk.CTkFrame(self)
+        frm.pack(fill="both", expand=True, padx=10, pady=8)
+
         bold_font = ("Arial", 10, "bold")
         big_bold_font = ("Arial", 24, "bold")
 
-        new = tk.Menubutton(frm, text=" + ", relief=tk.RAISED, font=big_bold_font)
-        new.grid(row=0, column=0, padx=5, pady=5)
-        new_menu = tk.Menu(new, tearoff=0)
-        new_menu.add_command(label="Fuel Tank", command=lambda: self.create_part("FT"))
-        new_menu.add_command(label="Engine", command=lambda: self.create_part("ENG"))
-        new_menu.add_command(label="Flag", command=lambda: self.create_part("FLAG"))
-        new["menu"] = new_menu
+        frm.grid_columnconfigure(0, weight=1)
+        frm.grid_rowconfigure(1, weight=1)
 
-        with open(f"{self.parts_data}", "r") as f:
+        # ---------------- MAIN BUTTON ----------------
+        new = tk.CTkButton(frm, text="+ New Part", font=big_bold_font)
+        new.grid(row=0, column=0, padx=5, pady=5, sticky="w")
+
+        # ---------------- DROPDOWN ----------------
+        dropdown = tk.CTkFrame(frm)
+        dropdown.grid(row=1, column=0, padx=5, pady=5, sticky="w")
+        dropdown.grid_remove()
+
+        tk.CTkButton(
+            dropdown,
+            text="Fuel Tank",
+            command=lambda: self.create_part("FT")
+        ).pack(fill="x", padx=5, pady=2)
+
+        tk.CTkButton(
+            dropdown,
+            text="Engine",
+            command=lambda: self.create_part("ENG")
+        ).pack(fill="x", padx=5, pady=2)
+
+        tk.CTkButton(
+            dropdown,
+            text="Flag",
+            command=lambda: self.create_part("FLAG")
+        ).pack(fill="x", padx=5, pady=2)
+
+        # ---------------- TOGGLE LOGIC ----------------
+        def toggle_dropdown():
+            if dropdown.winfo_ismapped():
+                dropdown.grid_remove()
+            else:
+                dropdown.lift()
+                dropdown.grid()
+
+        new.configure(command=toggle_dropdown)
+
+        # REMOVE GLOBAL BIND COMPLETELY (FIXES)
+        # self.bind("<Button-1>", close_dropdown)
+
+        # ---------------- LOAD DATA ----------------
+        with open(self.parts_data, "r") as f:
             data = json.load(f)
 
-        tk.Label(frm, text="Created Parts:", font=bold_font).grid(row=1, column=0, padx=10)
+        # ---------------- TITLE ----------------
+        tk.CTkLabel(frm, text="Created Parts:", font=bold_font).grid(
+            row=2, column=0, sticky="w", padx=10, pady=(10, 5)
+        )
 
-        if not data["parts"]:
-            tk.Label(frm, text="No Parts Created Yet").grid(row=2, column=0, sticky="w", padx=20, pady=5)
+        # ---------------- PART LIST ----------------
+        list_frame = tk.CTkFrame(frm)
+        list_frame.grid(row=3, column=0, sticky="nsew", padx=5, pady=(0, 10))
+        for col in range(4):
+            list_frame.grid_columnconfigure(col, weight=1, uniform="part_cols")
+
+        if not data.get("parts"):
+            tk.CTkLabel(list_frame, text="No Parts Created Yet").grid(row=0, column=0, sticky="w", padx=20, pady=5)
         else:
-            for i, (part_name, part_info) in enumerate(data["parts"].items(), start=2):
-                info = tk.Label(frm, text=f"{part_name}: {part_info.get('type', 'Unknown')}", fg="blue", cursor="hand2")
-                info.grid(row=i, column=0, sticky="w", padx=20)
+            for i, (part_name, part_info) in enumerate(data["parts"].items()):
+                row = i // 4
+                col = i % 4
+                info = tk.CTkLabel(
+                    list_frame,
+                    text=f"{part_name}: {part_info.get('type', 'Unknown')}",
+                    text_color="white",
+                    cursor="hand2",
+                    justify="left",
+                    wraplength=140
+                )
+                info.grid(row=row, column=col, sticky="w", padx=10, pady=2)
                 info.bind("<Button-1>", lambda e, name=part_name: self.view_info(name))
 
+        # ---------------- BOTTOM BUTTONS ----------------
+        bottom_frame = tk.CTkFrame(frm)
+        bottom_frame.grid(row=4, column=0, sticky="ew", pady=(0, 10))
+        bottom_frame.grid_columnconfigure(0, weight=1)
+        bottom_frame.grid_columnconfigure(1, weight=1)
 
-        tk.Button(self, text="Delete All Parts", fg="red", command=self.delete_all).pack(side="bottom", pady=10)
-        tk.Button(self, text="Package Parts", command=self.run_packager).pack(side="bottom", pady=5)
+        tk.CTkButton(
+            bottom_frame,
+            text="Delete All Parts",
+            fg_color="red",
+            command=self.delete_all
+        ).grid(row=0, column=0, padx=10, pady=6)
+
+        tk.CTkButton(
+            bottom_frame,
+            text="Package Parts",
+            command=self.run_packager
+        ).grid(row=0, column=1, padx=10, pady=6)
 
     def view_info(self, part_name):
         self.clear_window()
@@ -75,34 +148,35 @@ class KCreator(tk.Tk):
             data = json.load(f)
             part = data["parts"].get(part_name, {})
 
-        tk.Label(self, text=f"Part Name: {part_name}", font=("Arial", 12, "bold")).pack(pady=5)
-        tk.Label(self, text=f"Type: {part.get('type', 'Unknown')}").pack(pady=5)
+        tk.CTkLabel(self, text=f"Part Name: {part_name}", font=("Arial", 12, "bold")).pack(pady=5)
+        tk.CTkLabel(self, text=f"Type: {part.get('type', 'Unknown')}").pack(pady=5)
 
 
         if part['type'] == "Fuel Tank":
-            tk.Label(self, text=f"Description: {part.get('description', 'N/A')}").pack(pady=5)
-            tk.Label(self, text=f"Model: {part.get('model', part.get('texture', 'N/A'))}").pack(pady=5)
-            tk.Label(self, text=f"Capacity: {part.get('capacity', 'N/A')} units").pack(pady=5)
-            tk.Label(self, text=f"Entry Cost: {part.get('entry_cost', '1000')}").pack(pady=5)
-            tk.Label(self, text=f"Cost: {part.get('cost', '150')}").pack(pady=5)
-            tk.Label(self, text=f"Max Temp: {part.get('max_temp', '2000')}").pack(pady=5)
-            tk.Label(self, text=f"Node Stack Top: {part.get('node_stack_top', 'N/A')}").pack(pady=5)
-            tk.Label(self, text=f"Node Stack Bottom: {part.get('node_stack_bottom', 'N/A')}").pack(pady=5)
+            tk.CTkLabel(self, text=f"Description: {part.get('description', 'N/A')}").pack(pady=5)
+            tk.CTkLabel(self, text=f"Model: {part.get('model', part.get('texture', 'N/A'))}").pack(pady=5)
+            tk.CTkLabel(self, text=f"Capacity: {part.get('capacity', 'N/A')} units").pack(pady=5)
+            tk.CTkLabel(self, text=f"Entry Cost: {part.get('entry_cost', '1000')}").pack(pady=5)
+            tk.CTkLabel(self, text=f"Cost: {part.get('cost', '150')}").pack(pady=5)
+            tk.CTkLabel(self, text=f"Max Temp: {part.get('max_temp', '2000')}").pack(pady=5)
+            tk.CTkLabel(self, text=f"Node Stack Top: {part.get('node_stack_top', 'N/A')}").pack(pady=5)
+            tk.CTkLabel(self, text=f"Node Stack Bottom: {part.get('node_stack_bottom', 'N/A')}").pack(pady=5)
         elif part['type'] == "Engine":
-            tk.Label(self, text=f"Description: {part.get('description', 'N/A')}").pack(pady=5)
-            tk.Label(self, text=f"Model: {part.get('model', part.get('texture', 'N/A'))}").pack(pady=5)
-            tk.Label(self, text=f"Thrust: {part.get('thrust', 'N/A')} kN").pack(pady=5)
-            tk.Label(self, text=f"Fuel Type: {part.get('fuel_type', 'N/A')}").pack(pady=5)
-            tk.Label(self, text=f"Entry Cost: {part.get('entry_cost', '1000')}").pack(pady=5)
-            tk.Label(self, text=f"Cost: {part.get('cost', '150')}").pack(pady=5)
-            tk.Label(self, text=f"Max Temp: {part.get('max_temp', '2000')}").pack(pady=5)
+            tk.CTkLabel(self, text=f"Description: {part.get('description', 'N/A')}").pack(pady=5)
+            tk.CTkLabel(self, text=f"Model: {part.get('model', part.get('texture', 'N/A'))}").pack(pady=5)
+            tk.CTkLabel(self, text=f"Thrust: {part.get('thrust', 'N/A')} kN").pack(pady=5)
+            tk.CTkLabel(self, text=f"Fuel Type: {part.get('fuel_type', 'N/A')}").pack(pady=5)
+            tk.CTkLabel(self, text=f"Entry Cost: {part.get('entry_cost', '1000')}").pack(pady=5)
+            tk.CTkLabel(self, text=f"Cost: {part.get('cost', '150')}").pack(pady=5)
+            tk.CTkLabel(self, text=f"Max Temp: {part.get('max_temp', '2000')}").pack(pady=5)
         elif part['type'] == "Flag":
-            tk.Label(self, text=f"Texture: {part.get('texture', 'N/A')}").pack(pady=5)
+            tk.CTkLabel(self, text=f"Texture: {part.get('texture', 'N/A')}").pack(pady=5)
 
         if part['type'] != "Flag":
-            tk.Button(self, text="Edit Part", command=lambda: self.edit_part(part_name)).pack(pady=5)
-        tk.Button(self, text="Delete Part", fg="red", command=lambda: self.delete_part(part_name)).pack(pady=10)
-        tk.Button(self, text="Back", command=self.build_ui).pack(pady=10)
+            tk.CTkButton(self, text="Edit Part", command=lambda: self.edit_part(part_name)).pack(pady=5)
+
+        tk.CTkButton(self, text="Delete Part", fg_color="red", command=lambda: self.delete_part(part_name)).pack(pady=10)
+        tk.CTkButton(self, text="Back", command=self.build_ui).pack(pady=10)
 
     def validate_int(self, P):
         return P.isdigit() or P == ""
@@ -197,215 +271,213 @@ class KCreator(tk.Tk):
             self.fill_common_part_fields(part_data)
     
     def create_part(self, part_type, part_data=None):
+        self.part_type = part_type
         self.clear_window()
 
         self.vcmd = (self.register(self.validate_int), "%P")
         self.float_vcmd = (self.register(self.validate_float), "%P")
 
         # ---------------- MAIN ----------------
-        main = tk.Frame(self)
-        main.pack(fill='both', expand=True)
+        main = tk.CTkFrame(self)
+        main.pack(fill='both', expand=True, padx=12, pady=12)
 
         # Proper grid setup
-        main.rowconfigure(0, weight=1)  # notebook expands
-        main.rowconfigure(1, weight=0)  # footer fixed
+        main.rowconfigure(0, weight=1)
+        main.rowconfigure(1, weight=0)
         main.columnconfigure(0, weight=1)
 
         # ---------------- NOTEBOOK ----------------
-        notebook = ttk.Notebook(main)
-        notebook.grid(row=0, column=0, sticky="nsew")
+        notebook = tk.CTkTabview(main)
+        notebook.grid(row=0, column=0, sticky="nsew", padx=6, pady=(6, 0))
 
         # ---------------- FOOTER ----------------
-        footer = tk.Frame(main)
-        footer.grid(row=1, column=0, sticky="ew")
-
-        # Optional spacing so it looks nicer
-        footer.configure(pady=5)
+        footer = tk.CTkFrame(main)
+        footer.grid(row=1, column=0, sticky="ew", padx=6, pady=(8, 0))
 
         # ------------------ Fuel Tank ------------------
         if part_type == "FT":
-            basic_tab = tk.Frame(notebook)
-            model_tab = tk.Frame(notebook)
-            science_tab = tk.Frame(notebook)
-            advanced_tab = tk.Frame(notebook)
+            notebook.add("Basic")
+            notebook.add("Model")
+            notebook.add("Science")
+            notebook.add("Advanced")
 
-            notebook.add(basic_tab, text='Basic')
-            notebook.add(model_tab, text='Model')
-            notebook.add(science_tab, text='Science')
-            notebook.add(advanced_tab, text='Advanced')
+            basic_tab = notebook.tab("Basic")
+            model_tab = notebook.tab("Model")
+            science_tab = notebook.tab("Science")
+            advanced_tab = notebook.tab("Advanced")
 
             # Basic
-            tk.Label(basic_tab, text="Fuel Tank Name:").pack(pady=5)
-            self.name = tk.Entry(basic_tab, width=40)
-            self.name.pack(pady=5)
+            tk.CTkLabel(basic_tab, text="Fuel Tank Name:").pack(anchor="w", padx=18, pady=(10, 2))
+            self.name = tk.CTkEntry(basic_tab, width=420)
+            self.name.pack(padx=18, pady=(0, 8), fill="x")
 
-            tk.Label(basic_tab, text="Description:").pack(pady=5)
-            self.description = tk.Entry(basic_tab, width=40)
-            self.description.pack(pady=5)
+            tk.CTkLabel(basic_tab, text="Description:").pack(anchor="w", padx=18, pady=(0, 2))
+            self.description = tk.CTkEntry(basic_tab, width=420)
+            self.description.pack(padx=18, pady=(0, 8), fill="x")
 
-            tk.Label(basic_tab, text="Fuel Capacity (units):").pack(pady=5)
-            self.capacity = tk.Entry(basic_tab, width=20, validate='key', validatecommand=self.vcmd)
-            self.capacity.pack(pady=5)
+            tk.CTkLabel(basic_tab, text="Fuel Capacity (units):").pack(anchor="w", padx=18, pady=(0, 2))
+            self.capacity = tk.CTkEntry(basic_tab, width=180, validate='key', validatecommand=self.vcmd)
+            self.capacity.pack(anchor="w", padx=18, pady=(0, 8))
 
             # Model
-            tk.Button(model_tab, text="Select Model", command=self.select_model).pack(pady=5)
-            self.model_label = tk.Label(model_tab, text="Selected Model: Default")
-            self.model_label.pack(pady=5)
+            tk.CTkButton(model_tab, text="Select Model", command=self.select_model).pack(anchor="w", padx=18, pady=(10, 6))
+            self.model_label = tk.CTkLabel(model_tab, text="Selected Model: Default")
+            self.model_label.pack(anchor="w", padx=18, pady=(0, 6))
 
-            tk.Button(model_tab, text="Select Texture", command=self.select_texture).pack(pady=5)
-            self.texture_label = tk.Label(model_tab, text="Selected Texture: Default")
-            self.texture_label.pack(pady=5)
+            tk.CTkButton(model_tab, text="Select Texture", command=self.select_texture).pack(anchor="w", padx=18, pady=(0, 6))
+            self.texture_label = tk.CTkLabel(model_tab, text="Selected Texture: Default")
+            self.texture_label.pack(anchor="w", padx=18, pady=(0, 6))
 
-            tk.Label(model_tab, text="Node Stack Top:").pack(pady=5)
-            self.node_stack_top = tk.Entry(model_tab, width=40)
-            self.node_stack_top.pack(pady=5)
+            tk.CTkLabel(model_tab, text="Node Stack Top:").pack(anchor="w", padx=18, pady=(10, 2))
+            self.node_stack_top = tk.CTkEntry(model_tab, width=420)
+            self.node_stack_top.pack(padx=18, pady=(0, 8), fill="x")
             self.node_stack_top.insert(0, "0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1")
             ToolTip(self.node_stack_top, "Default: 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1\nFormat: X, Y, Z, Xdir, Ydir, Zdir, size")
 
-            tk.Label(model_tab, text="Node Stack Bottom:").pack(pady=5)
-            self.node_stack_bottom = tk.Entry(model_tab, width=40)
-            self.node_stack_bottom.pack(pady=5)
+            tk.CTkLabel(model_tab, text="Node Stack Bottom:").pack(anchor="w", padx=18, pady=(0, 2))
+            self.node_stack_bottom = tk.CTkEntry(model_tab, width=420)
+            self.node_stack_bottom.pack(padx=18, pady=(0, 8), fill="x")
             self.node_stack_bottom.insert(0, "0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1")
             ToolTip(self.node_stack_bottom, "Default: 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1\nFormat: X, Y, Z, Xdir, Ydir, Zdir, size")
 
-            tk.Button(model_tab, text="Help", command=lambda: webbrowser.open("https://wiki.kerbalspaceprogram.com/wiki/CFG_File_Documentation#Node_Definitions")).pack(pady=5)
+            tk.CTkButton(model_tab, text="Help", command=lambda: webbrowser.open("https://wiki.kerbalspaceprogram.com/wiki/CFG_File_Documentation#Node_Definitions")).pack(anchor="w", padx=18, pady=(0, 10))
 
             # Science
-            tk.Label(science_tab, text="Tech Required:").pack(pady=20)
-            self.tech_required = tk.Entry(science_tab, width=40)
-            self.tech_required.pack(pady=5)
+            tk.CTkLabel(science_tab, text="Tech Required:").pack(anchor="w", padx=18, pady=(10, 2))
+            self.tech_required = tk.CTkEntry(science_tab, width=420)
+            self.tech_required.pack(padx=18, pady=(0, 8), fill="x")
             self.tech_required.insert(0, "basicRocketry")
             ToolTip(self.tech_required, "The technology required to unlock this part.\neg. basicRocketry, fuelSystems, propulsionSystems")
 
-            tk.Button(science_tab, text="Help", command=lambda: webbrowser.open("https://wiki.kerbalspaceprogram.com/index.php?title=CFG_File_Documentation#Editor_Parameters")).pack(pady=5)
-            tk.Label(science_tab, text="Entry Cost:").pack(pady=5)
-            self.entry_cost = tk.Entry(science_tab, width=20, validate='key', validatecommand=self.vcmd)
-            self.entry_cost.pack(pady=5)
+            tk.CTkButton(science_tab, text="Help", command=lambda: webbrowser.open("https://wiki.kerbalspaceprogram.com/index.php?title=CFG_File_Documentation#Editor_Parameters")).pack(anchor="w", padx=18, pady=(0, 10))
+            tk.CTkLabel(science_tab, text="Entry Cost:").pack(anchor="w", padx=18, pady=(0, 2))
+            self.entry_cost = tk.CTkEntry(science_tab, width=180, validate='key', validatecommand=self.vcmd)
+            self.entry_cost.pack(anchor="w", padx=18, pady=(0, 8))
             self.entry_cost.insert(0, "1000")
 
-            tk.Label(science_tab, text="Cost:").pack(pady=5)
-            self.cost = tk.Entry(science_tab, width=20, validate='key', validatecommand=self.vcmd)
-            self.cost.pack(pady=5)
+            tk.CTkLabel(science_tab, text="Cost:").pack(anchor="w", padx=18, pady=(0, 2))
+            self.cost = tk.CTkEntry(science_tab, width=180, validate='key', validatecommand=self.vcmd)
+            self.cost.pack(anchor="w", padx=18, pady=(0, 8))
             self.cost.insert(0, "150")
 
             # Advanced
-            tk.Label(advanced_tab, text="Fuel Type:").pack(pady=5)
-            self.fuel_type = tk.Entry(advanced_tab, width=30)
-            self.fuel_type.pack(pady=5)
+            tk.CTkLabel(advanced_tab, text="Fuel Type:").pack(anchor="w", padx=18, pady=(10, 2))
+            self.fuel_type = tk.CTkEntry(advanced_tab, width=280)
+            self.fuel_type.pack(anchor="w", padx=18, pady=(0, 8))
             self.fuel_type.insert(0, "LiquidFuel")
             self.useOxidizer = tk.IntVar(value=1)
-            oxidizerCheck = tk.Checkbutton(advanced_tab, text="Use Oxidizer", variable=self.useOxidizer)
-            oxidizerCheck.pack()
+            oxidizerCheck = tk.CTkCheckBox(advanced_tab, text="Use Oxidizer", variable=self.useOxidizer)
+            oxidizerCheck.pack(anchor="w", padx=18, pady=(0, 8))
             ToolTip(self.fuel_type, "The fuel the tank holds.\n(LiquidFuel, Oxidizer, SolidFuel, MonoPropellant, XenonGas, ElectricCharge)")
             ToolTip(oxidizerCheck, "Check if the tank is a LiquidFuel/Oxidizer.")
 
-            tk.Label(advanced_tab, text="Max Temp:").pack(pady=5)
-            self.max_temp = tk.Entry(advanced_tab, width=20, validate='key', validatecommand=self.vcmd)
-            self.max_temp.pack(pady=5)
+            tk.CTkLabel(advanced_tab, text="Max Temp:").pack(anchor="w", padx=18, pady=(0, 2))
+            self.max_temp = tk.CTkEntry(advanced_tab, width=180, validate='key', validatecommand=self.vcmd)
+            self.max_temp.pack(anchor="w", padx=18, pady=(0, 10))
             self.max_temp.insert(0, "2000")
 
-            tk.Button(footer, text="Save Fuel Tank", command=self.save_part).pack(pady=5)
+            tk.CTkButton(footer, text="Save Fuel Tank", command=self.save_part).pack(side="left", padx=5, pady=6)
 
         # ------------------ Engine ------------------
         elif part_type == "ENG":
-            basic_tab = tk.Frame(notebook)
-            model_tab = tk.Frame(notebook)
-            science_tab = tk.Frame(notebook)
-            advanced_tab = tk.Frame(notebook)
+            notebook.add("Basic")
+            notebook.add("Model")
+            notebook.add("Science")
+            notebook.add("Advanced")
 
-            notebook.add(basic_tab, text='Basic')
-            notebook.add(model_tab, text='Model')
-            notebook.add(science_tab, text='Science')
-            notebook.add(advanced_tab, text='Advanced')
+            basic_tab = notebook.tab("Basic")
+            model_tab = notebook.tab("Model")
+            science_tab = notebook.tab("Science")
+            advanced_tab = notebook.tab("Advanced")
 
             # Basic
-            tk.Label(basic_tab, text="Engine Name:").pack(pady=5)
-            self.name = tk.Entry(basic_tab, width=40)
-            self.name.pack(pady=5)
+            tk.CTkLabel(basic_tab, text="Engine Name:").pack(anchor="w", padx=18, pady=(10, 2))
+            self.name = tk.CTkEntry(basic_tab, width=420)
+            self.name.pack(padx=18, pady=(0, 8), fill="x")
 
-            tk.Label(basic_tab, text="Description:").pack(pady=5)
-            self.description = tk.Entry(basic_tab, width=40)
-            self.description.pack(pady=5)
+            tk.CTkLabel(basic_tab, text="Description:").pack(anchor="w", padx=18, pady=(0, 2))
+            self.description = tk.CTkEntry(basic_tab, width=420)
+            self.description.pack(padx=18, pady=(0, 8), fill="x")
 
-            tk.Label(basic_tab, text="Thrust (kN):").pack(pady=5)
-            self.thrust = tk.Entry(basic_tab, width=20, validate='key', validatecommand=self.float_vcmd)
-            self.thrust.pack(pady=5)
+            tk.CTkLabel(basic_tab, text="Thrust (kN):").pack(anchor="w", padx=18, pady=(0, 2))
+            self.thrust = tk.CTkEntry(basic_tab, width=180, validate='key', validatecommand=self.float_vcmd)
+            self.thrust.pack(anchor="w", padx=18, pady=(0, 8))
 
             # Model
-            tk.Button(model_tab, text="Select Model", command=self.select_model).pack(pady=5)
-            self.model_label = tk.Label(model_tab, text="Selected Model: Default")
-            self.model_label.pack(pady=5)
+            tk.CTkButton(model_tab, text="Select Model", command=self.select_model).pack(anchor="w", padx=18, pady=(10, 6))
+            self.model_label = tk.CTkLabel(model_tab, text="Selected Model: Default")
+            self.model_label.pack(anchor="w", padx=18, pady=(0, 6))
 
-            tk.Button(model_tab, text="Select Texture", command=self.select_texture).pack(pady=5)
-            self.texture_label = tk.Label(model_tab, text="Selected Texture: Default")
-            self.texture_label.pack(pady=5)
+            tk.CTkButton(model_tab, text="Select Texture", command=self.select_texture).pack(anchor="w", padx=18, pady=(0, 6))
+            self.texture_label = tk.CTkLabel(model_tab, text="Selected Texture: Default")
+            self.texture_label.pack(anchor="w", padx=18, pady=(0, 6))
 
-            tk.Label(model_tab, text="Node Stack Top:").pack(pady=5)
-            self.node_stack_top = tk.Entry(model_tab, width=40)
-            self.node_stack_top.pack(pady=5)
+            tk.CTkLabel(model_tab, text="Node Stack Top:").pack(anchor="w", padx=18, pady=(10, 2))
+            self.node_stack_top = tk.CTkEntry(model_tab, width=420)
+            self.node_stack_top.pack(padx=18, pady=(0, 8), fill="x")
             self.node_stack_top.insert(0, "0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1")
             ToolTip(self.node_stack_top, "Default: 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1\nFormat: X, Y, Z, Xdir, Ydir, Zdir, size")
-            tk.Label(model_tab, text="Node Stack Bottom:").pack(pady=5)
-            self.node_stack_bottom = tk.Entry(model_tab, width=40)
-            self.node_stack_bottom.pack(pady=5)
+            tk.CTkLabel(model_tab, text="Node Stack Bottom:").pack(anchor="w", padx=18, pady=(0, 2))
+            self.node_stack_bottom = tk.CTkEntry(model_tab, width=420)
+            self.node_stack_bottom.pack(padx=18, pady=(0, 8), fill="x")
             self.node_stack_bottom.insert(0, "0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1")
             ToolTip(self.node_stack_bottom, "Default: 0.0, -1.0, 0.0, 0.0, -1.0, 0.0, 1\nFormat: X, Y, Z, Xdir, Ydir, Zdir, size")
 
-            tk.Button(model_tab, text="Help", command=lambda: webbrowser.open("https://wiki.kerbalspaceprogram.com/wiki/CFG_File_Documentation#Node_Definitions")).pack(pady=5)
+            tk.CTkButton(model_tab, text="Help", command=lambda: webbrowser.open("https://wiki.kerbalspaceprogram.com/wiki/CFG_File_Documentation#Node_Definitions")).pack(anchor="w", padx=18, pady=(0, 10))
 
             # Science
-            tk.Label(science_tab, text="Tech Required:").pack(pady=20)
-            self.tech_required = tk.Entry(science_tab, width=40)
-            self.tech_required.pack(pady=5)
+            tk.CTkLabel(science_tab, text="Tech Required:").pack(anchor="w", padx=18, pady=(10, 2))
+            self.tech_required = tk.CTkEntry(science_tab, width=420)
+            self.tech_required.pack(padx=18, pady=(0, 8), fill="x")
             self.tech_required.insert(0, "basicRocketry")
             ToolTip(self.tech_required, "The technology required to unlock this part.\neg. basicRocketry, fuelSystems, propulsionSystems")
 
-            tk.Label(science_tab, text="Entry Cost:").pack(pady=5)
-            self.entry_cost = tk.Entry(science_tab, width=20, validate='key', validatecommand=self.vcmd)
-            self.entry_cost.pack(pady=5)
+            tk.CTkButton(science_tab, text="Help", command=lambda: webbrowser.open("https://wiki.kerbalspaceprogram.com/index.php?title=CFG_File_Documentation#Editor_Parameters")).pack(anchor="w", padx=18, pady=(0, 10))
+            tk.CTkLabel(science_tab, text="Entry Cost:").pack(anchor="w", padx=18, pady=(0, 2))
+            self.entry_cost = tk.CTkEntry(science_tab, width=180, validate='key', validatecommand=self.vcmd)
+            self.entry_cost.pack(anchor="w", padx=18, pady=(0, 8))
             self.entry_cost.insert(0, "1000")
 
-            tk.Label(science_tab, text="Cost:").pack(pady=5)
-            self.cost = tk.Entry(science_tab, width=20, validate='key', validatecommand=self.vcmd)
-            self.cost.pack(pady=5)
+            tk.CTkLabel(science_tab, text="Cost:").pack(anchor="w", padx=18, pady=(0, 2))
+            self.cost = tk.CTkEntry(science_tab, width=180, validate='key', validatecommand=self.vcmd)
+            self.cost.pack(anchor="w", padx=18, pady=(0, 8))
             self.cost.insert(0, "150")
 
             # Advanced
-            tk.Label(advanced_tab, text="Fuel Type:").pack(pady=5)
-            self.fuel_type = tk.Entry(advanced_tab, width=30)
-            self.fuel_type.pack(pady=5)
+            tk.CTkLabel(advanced_tab, text="Fuel Type:").pack(anchor="w", padx=18, pady=(10, 2))
+            self.fuel_type = tk.CTkEntry(advanced_tab, width=280)
+            self.fuel_type.pack(anchor="w", padx=18, pady=(0, 8))
             self.fuel_type.insert(0, "LiquidFuel")
 
             self.useOxidizer = tk.IntVar(value=1)
-            oxidizerCheck = tk.Checkbutton(advanced_tab, text="Use Oxidizer", variable=self.useOxidizer)
-            oxidizerCheck.pack()
+            oxidizerCheck = tk.CTkCheckBox(advanced_tab, text="Use Oxidizer", variable=self.useOxidizer)
+            oxidizerCheck.pack(anchor="w", padx=18, pady=(0, 8))
             ToolTip(self.fuel_type, "The fuel the engine uses.\n(LiquidFuel, Oxidizer, SolidFuel, MonoPropellant, XenonGas, ElectricCharge)")
             ToolTip(oxidizerCheck, "Check if the engine is a Liquid Fuel/Oxidizer.")
 
-            tk.Label(advanced_tab, text="Max Temp:").pack(pady=5)
-            self.max_temp = tk.Entry(advanced_tab, width=20, validate='key', validatecommand=self.vcmd)
-            self.max_temp.pack(pady=5)
+            tk.CTkLabel(advanced_tab, text="Max Temp:").pack(anchor="w", padx=18, pady=(0, 2))
+            self.max_temp = tk.CTkEntry(advanced_tab, width=180, validate='key', validatecommand=self.vcmd)
+            self.max_temp.pack(anchor="w", padx=18, pady=(0, 10))
             self.max_temp.insert(0, "2000")
 
-
-            tk.Button(footer, text="Save Engine", command=self.save_part).pack(pady=5)
+            tk.CTkButton(footer, text="Save Engine", command=self.save_part).pack(side="left", padx=5, pady=6)
 
         # ------------------ Flag ------------------
         elif part_type == "FLAG":
-            basic_tab = tk.Frame(notebook)
-            notebook.add(basic_tab, text='Basic')
+            notebook.add("Basic")
+            basic_tab = notebook.tab("Basic")
 
-            tk.Label(basic_tab, text="Flag Name:").pack(pady=5)
-            self.name = tk.Entry(basic_tab, width=40)
-            self.name.pack(pady=5)
+            tk.CTkLabel(basic_tab, text="Flag Name:").pack(anchor="w", padx=18, pady=(10, 2))
+            self.name = tk.CTkEntry(basic_tab, width=420)
+            self.name.pack(padx=18, pady=(0, 8), fill="x")
 
-            tk.Button(basic_tab, text="Select Texture", command=self.select_texture).pack(pady=5)
-            self.texture_label = tk.Label(basic_tab, text="Selected Texture: Default")
-            self.texture_label.pack(pady=5)
+            tk.CTkButton(basic_tab, text="Select Texture", command=self.select_texture).pack(anchor="w", padx=18, pady=(10, 6))
+            self.texture_label = tk.CTkLabel(basic_tab, text="Selected Texture: Default")
+            self.texture_label.pack(anchor="w", padx=18, pady=(0, 10))
 
-            tk.Button(footer, text="Save Flag", command=self.save_part).pack(pady=5)
+            tk.CTkButton(footer, text="Save Flag", command=self.save_part).pack(side="left", padx=5, pady=6)
 
-        tk.Button(footer, text="Cancel", command=self.build_ui).pack(pady=5)
+        tk.CTkButton(footer, text="Cancel", command=self.build_ui).pack(side="left", padx=5, pady=6)
 
         if part_data:
             self.fill_part_fields(part_data)
@@ -723,13 +795,9 @@ class KCreator(tk.Tk):
 
 def start_app(parts_data, mod_name, workspace_dir, mod_version, mod_author):
     app = KCreator(parts_data=parts_data, mod_name=mod_name, workspace_dir=workspace_dir, mod_ver=mod_version, mod_author=mod_author)
-    # Dark mode and auto-refresh hooks
-    auto_hook(app)
-    enable_auto_refresh(app)
     print(f"KCreator v{app.version} Copyright © 2025 TheOR30")
     app.mainloop()
 
 if __name__ == "__main__":
-    import menu
     menu.start_menu()
 
